@@ -1,0 +1,296 @@
+/* Copyright (c) 2009, 2011 University of Illinois
+                   Universitat Politecnica de Catalunya
+                   All rights reserved.
+
+Developed by: IMPACT Research Group / Grup de Sistemes Operatius
+              University of Illinois / Universitat Politecnica de Catalunya
+              http://impact.crhc.illinois.edu/
+              http://gso.ac.upc.edu/
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to
+deal with the Software without restriction, including without limitation the
+rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+sell copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+  1. Redistributions of source code must retain the above copyright notice,
+     this list of conditions and the following disclaimers.
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimers in the
+     documentation and/or other materials provided with the distribution.
+  3. Neither the names of IMPACT Research Group, Grup de Sistemes Operatius,
+     University of Illinois, Universitat Politecnica de Catalunya, nor the
+     names of its contributors may be used to endorse or promote products
+     derived from this Software without specific prior written permission.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+WITH THE SOFTWARE.  */
+
+/**
+ * \file include/gmac/cl
+ *
+ * GMAC/CL C++ interface. Requires the C++ interface of the OpenCL 1.1 standard
+ */
+
+#if defined(__APPLE__)
+#error "This header cannot be used in Apple"
+#endif
+#ifndef __cplusplus
+#error "This header can only be included in C++ programs"
+#endif
+
+#ifndef GMAC_CL_CPP_H_
+#define GMAC_CL_CPP_H_
+
+#include <CL/cl.hpp>
+#include "cl.h"
+
+#include <sys/stat.h>
+
+namespace cl {
+
+/**
+ *  Allocates a OpenCL memory buffer accessible from the host
+ *  \param queue OpenCL command queue attached to the context where the object will be allocated
+ *  \param addr Reference to the host memory address where the data will be accessible
+ *  \param count Size (in bytes) of the data to be allocated
+ *  \return OpenCL error code
+ */
+inline cl_int malloc(const CommandQueue &queue, void **addr, ::size_t count)
+{
+    return ::clMalloc(queue(), addr, count);
+}
+
+/**
+ * Wrapper to malloc in the root namespace; this is added to workaround the
+ * error currently present in the Khronos C++ wrapper header file
+ */
+inline void *malloc(::size_t size)
+{
+    return ::malloc(size);
+}
+
+
+/**
+ *  Release the OpenCL buffer associated to a host memory address
+ *  \param queue OpenCL command queue attached to the context where the object was allocated
+ *  \param addr Host memory address
+ *  \return OpenCL error code
+ */
+inline cl_int free(const CommandQueue &queue, void *addr)
+{
+    return ::clFree(queue(), addr);
+}
+
+
+/**
+ *  Returns the OpenCL buffer associated to a host memory address
+ *  \param context OpenCL context where the obejct was allocated
+ *  \param addr Host memory address
+ *  \return OpenCL error code
+ */
+template <typename T>
+inline cl_mem getBuffer(const Context &context, const T *addr)
+{
+    return ::clGetBuffer(context(), addr);
+}
+
+/**
+ * GMAC/CL Helper class to ease the management of OpenCL platforms/devices/contexts/queues
+ */
+class Helper {
+    static VECTOR_CLASS<Helper> platforms_;
+
+    VECTOR_CLASS<cl::Device> devices_;
+    VECTOR_CLASS<cl::Context> contexts_;
+    VECTOR_CLASS<cl::CommandQueue> queues_;
+
+
+    /**
+     * Creates a Helper object for the given platform
+     *
+     * \param platform Reference to the platform to be used
+     * \param error A pointer to the variable to store CL_SUCCESS on success, an error code otherwise
+     */
+    Helper(cl::Platform &platform, cl_int *error);
+
+public:
+    /**
+     * Compiles and loads the given code to be used on the devices of the platform
+     *
+     * \param code String with the source code
+     * \param error A pointer to the variable to store CL_SUCCESS on success, an error code otherwise
+	 */
+    VECTOR_CLASS<cl::Program> buildProgram(STRING_CLASS code, cl_int *error);
+
+    /**
+     * Compiles and loads the code in the given file to be used on the devices of the platform
+     *
+     * \param code String with the path of the file that contains the source code
+     * \param error A pointer to the variable to store CL_SUCCESS on success, an error code otherwise
+	 */
+    VECTOR_CLASS<cl::Program> buildProgramFromFile(STRING_CLASS file_name, cl_int *error);
+
+    /**
+     * Returns the CL devices of the platform
+     *
+     * \return A vector that contains the CL devices of the platform
+     */
+    VECTOR_CLASS<cl::Device> &getDevices()
+    {
+        return devices_;
+    }
+
+    /**
+     * Returns the CL contexts of the platform
+     *
+     * \return A vector that contains the CL contexts of the platform (one per device)
+     */
+    VECTOR_CLASS<cl::Context> &getContexts()
+    {
+        return contexts_;
+    }
+
+    /**
+     * Returns the CL command queues of the platform
+     *
+     * \return A vector that contains the CL command queues of the platform (one per device)
+     */
+    VECTOR_CLASS<cl::CommandQueue> &getCommandQueues()
+    {
+        return queues_;
+    }
+
+    /**
+     * Returns the CL platforms found in the system
+     *
+     * \return A vector that contains the one helper per CL platform found in the system
+     */
+    static VECTOR_CLASS<Helper> &getPlatforms()
+    {
+        return platforms_;
+    }
+
+    /**
+     * Initializes the GMAC/CL Helpers mechanism. This function must be called at the beginning of the program
+     *
+     * \return CL_SUCCESS on success, an error code otherwise
+     */
+    static cl_int init();
+};
+
+VECTOR_CLASS<Helper> Helper::platforms_;
+
+cl_int
+Helper::init()
+{
+    if (Helper::platforms_.size() > 0) return CL_SUCCESS;
+
+    cl_int error;
+    VECTOR_CLASS<cl::Platform> clPlatforms;
+    error = cl::Platform::get(&clPlatforms);
+
+    if (error != CL_SUCCESS) return error;
+
+    for (::size_t i = 0; i < clPlatforms.size(); i++) {
+        Helper helper(clPlatforms[i], &error);
+        if (error != CL_SUCCESS) return error;
+        Helper::platforms_.push_back(helper);
+    }
+
+    return CL_SUCCESS;
+}
+
+Helper::Helper(cl::Platform &platform, cl_int *error)
+{
+    *error = platform.getDevices(CL_DEVICE_TYPE_GPU, &devices_);
+    if (*error != CL_SUCCESS) return;
+
+    for (unsigned i = 0; i < devices_.size(); i++) {
+        VECTOR_CLASS<cl::Device> device;
+        device.push_back(devices_[i]);
+        cl::Context context(device, NULL, NULL, NULL, error);
+        if (*error != CL_SUCCESS) return;
+        contexts_.push_back(context);
+        cl::CommandQueue queue(context, devices_[i], NULL, error);
+        if (*error != CL_SUCCESS) return;
+        queues_.push_back(queue);
+    }
+}
+
+VECTOR_CLASS<cl::Program>
+Helper::buildProgram(STRING_CLASS source_code, cl_int *error)
+{
+    VECTOR_CLASS<cl::Program> programs;
+
+    for (unsigned i = 0; i < devices_.size(); i++) {
+        cl::Program::Sources sources;
+        sources.push_back(std::pair<const char *, ::size_t>(source_code.c_str(), sources.size()));
+        cl::Program program(contexts_[0], sources, error);
+        assert(*error == CL_SUCCESS);
+        VECTOR_CLASS<cl::Device> device;
+        device.push_back(devices_[i]);
+        *error = program.build(device);
+        assert(*error == CL_SUCCESS);
+
+        programs.push_back(program);
+    }
+
+    return programs;
+}
+
+VECTOR_CLASS<cl::Program>
+Helper::buildProgramFromFile(STRING_CLASS file_name, cl_int *error)
+{
+    FILE *fp;
+    struct stat file_stats;
+    char *buffer = NULL;
+    ::size_t read_bytes;
+    std::string code;
+
+    if(stat(file_name.c_str(), &file_stats) < 0) { *error = CL_INVALID_VALUE; goto exit; }
+#if defined(_MSC_VER)
+#   undef stat
+#endif
+
+    buffer = (char *)::malloc((file_stats.st_size + 1) * sizeof(char));
+    if(buffer == NULL) { *error = CL_OUT_OF_HOST_MEMORY; goto exit; }
+
+#if defined(_MSC_VER)
+        if(fopen_s(&fp, file_name.c_str(), "rt") != 0) { *error = CL_INVALID_VALUE; goto cleanup; }
+#else
+    fp = fopen(file_name.c_str(), "rt");
+    if(fp == NULL) { *error = CL_INVALID_VALUE; goto cleanup; }
+#endif
+    read_bytes = fread(buffer, file_stats.st_size, sizeof(char), fp);
+    fclose(fp);
+    if(read_bytes != (::size_t)file_stats.st_size) {
+        *error = CL_INVALID_VALUE;
+        goto cleanup;
+    }
+    buffer[file_stats.st_size] = '\0';
+
+    code = std::string(buffer);
+
+    ::free(buffer);
+
+    return buildProgram(code, error);
+
+cleanup:
+    ::free(buffer);
+exit:
+    return VECTOR_CLASS<cl::Program>();
+}
+
+}
+
+#undef __dv
+
+#endif /* GMAC_LITE_CPP_H_ */
+
+/* vim:set ft=cpp backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

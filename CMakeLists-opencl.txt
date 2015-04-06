@@ -1,0 +1,31 @@
+option(USE_OPENCL "Enable OpenCL backend" OFF)
+if(USE_OPENCL)
+    set(OPENCL_INCLUDE "/usr/include" CACHE PATH "OpenCL Header Files")
+    set(OPENCL_LIBRARY "/usr/lib" CACHE PATH "OpenCL Library Files")
+    add_definitions(-DUSE_OPENCL)
+    message(STATUS "Compiling for OpenCL headers path: ${OPENCL_INCLUDE}")
+    message(STATUS "Compiling for OpenCL library path: ${OPENCL_LIBRARY}")
+    set(API_DIR "opencl")
+    include_directories(${OPENCL_INCLUDE})
+    find_library(opencl_LIB
+                 ${CMAKE_IMPORT_LIBRARY_PREFIX}OpenCL${CMAKE_IMPORT_LIBRARY_SUFFIX}
+                 HINTS ${OPENCL_LIBRARY} ENV "OPENCL_LIBRARY_PATH")
+    message(STATUS "OpenCL Library: ${opencl_LIB}")
+    set(gmac_LIBS ${gmac_LIBS} ${opencl_LIB})
+
+    set(OPENCL_API_PREFIX "ecl" CACHE PATH "Prefix for API functions in the OpenCL GMAC version")
+
+    set(MAKE_CL ON)
+
+    set(GMAC_BLOCK_SIZE "512 * 1024")
+
+    set(GMAC_HEADERS ${GMAC_HEADERS} 
+                     ${CMAKE_BINARY_DIR}/src/include/gmac/opencl
+                     ${CMAKE_BINARY_DIR}/src/include/gmac/opencl.h
+                     ${CMAKE_BINARY_DIR}/src/include/gmac/opencl_types.h)
+
+    set(GMAC_TARGET_NAME "${GMAC_TARGET_NAME}-hpe")
+    set(DOXYGEN_EXCLUDE_PATTERN "*/cuda/*")
+    set(DOXYGEN_EXCLUDE_SYMBOLS "*::cuda::*")
+
+endif(USE_OPENCL)

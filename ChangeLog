@@ -1,0 +1,78 @@
+libgmac (0.0.4) unstable; urgency=medium
+
+  * Added lazy context creation
+  * Added gmacSetAffinity and gmacAccs functions to the public API
+  * Misc fixes
+
+ -- Javier Cabezas <jcabezas@ac.upc.edu> Thu, 18 Jan 17:04:00 +0100
+
+libgmac (0.0.3-4) unstable; urgency=medium
+
+  * Fixed gmac header files to avoid multiple references to gmacGetLastError when using C compiler
+
+ -- Isaac Gelado <igelado@ac.upc.edu> Thu, 10 Dec 23:35:00 +0100
+
+libgmac (0.0.3-3) unstable; urgency=high
+
+  * Fixed CUDA Driver code to implement dead-lock canary
+
+ -- Isaac Gelado <igelado@ac.upc.edu> Thu, 10 Dec 23:30:00 +0100
+
+libgmac (0.0.3-2) unstable; urgency=low
+
+  * Added missing dead-lock canary to CUDA Driver compatibility code
+
+ -- Isaac Gelado <igelado@ac.upc.edu> Thu, 10 Dec 18:40:00 +0100
+
+libgmac (0.0.3-1) unstable; urgency=low
+
+  * Fixed bad handling of user and GMAC execution state
+  * Added useful message for unhandled segmentation faults
+
+ -- Isaac Gelado <igelado@ac.upc.edu> Thu, 10 Dec 10:20:00 +0100
+
+libgmac (0.0.3) unstable; urgency=low
+
+  * Implemented stream support for concurrent memcpy and execution and
+    non-locking contexts
+
+ -- Isaac Gelado <igelado@ac.upc.edu> Wed, 9 Dec 2009 20:10 +0100
+
+libgmac (0.0.2.2-2) unstable; urgency=low
+
+  * Fixed inifinite recursion in fwrite overload
+
+ -- Isaac Gelado <igelado@ac.upc.edu> Wed, 9 Dec 2009 20:10 +0100
+
+libgmac (0.0.2.2) unstable; urgency=low
+
+  * New locking infrastructure and code clean-up
+
+ -- Isaac Gelado <igelado@ac.upc.edu> Wed, 9 Dec 2009 12:00:00 +0100
+
+libgmac (0.0.2.1) unstable; urgency=low
+
+  * Added PARAM_REGISTER macro to configure and set up parameters that can
+    be modified by environment variables
+  * Parameters can be printed by setting GMAC_PRINT_PARAMS=1 before program
+    execution
+  * Support for page-locked buffers. Currently used in device<->device and
+    device<->disk memory transfers. There is one buffer per Context:
+    - GMAC_BUFFER_PAGE_LOCKED=1 enables the feature
+    - GMAC_BUFFER_PAGE_LOCKED_SIZE configures the size in bytes of the buffer
+
+ -- Javier Cabezas <jcabezas@ac.upc.edu>  Thu, 2 Dec 2009 16:25:00 +0100
+
+libgmac (0.0.2-1) unstable; urgency=low
+
+  * Fixed mmap issues.
+  * Fixed device dectection in cudadrv and cuda backends
+
+ -- Javier Cabezas <jcabezas@ac.upc.edu>  Thu, 02 Nov 2009 18:25:00 +0100
+
+libgmac (0.0.1-1) unstable; urgency=low
+
+  * First package version.
+
+ -- Javier Cabezas <jcabezas@ac.upc.edu>  Thu, 02 Nov 2009 18:25:00 +0100
+

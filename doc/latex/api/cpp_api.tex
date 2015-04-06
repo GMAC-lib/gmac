@@ -1,0 +1,288 @@
+\section{GMAC\slash HPE C++ types for OpenCL}
+
+All symbols in the C++ API are nested in the \texttt{ecl} namespace.
+
+\subsection{\texttt{ecl::error\_t}}
+
+Most GMAC calls return an error code. \texttt{eclSuccess} is returned on success.
+\vspace{11pt}\\
+\begin{tabularx}{\linewidth}{|>{\texttt\bgroup}l<{\egroup}|X|}
+  \hline
+  \textnormal{Value} & Description \\
+  \hline
+  \hline
+  eclSuccess                            & No error                             \\
+  eclErrorMemoryAllocation              & Error allocating memory              \\
+  eclErrorLaunchFailure                 & Error launching the kernel           \\
+  eclErrorNotReady                      &                                      \\
+  eclErrorNoAccelerator                 &                                      \\
+  eclErrorInvalidValue                  & Invalid value passed to the function \\
+  eclErrorInvalidAccelerator            & Invalid accelerator specified        \\
+  eclErrorInvalidAcceleratorFunction    & Invalid accelerator function         \\
+  eclErrorInvalidSize                   &                                      \\
+  eclErrorAlreadyBound                  &                                      \\
+  eclErrorApiFailureBase                &                                      \\
+  eclErrorFeatureNotSupported           & Feature not supported by the hardware\slash{}compilation
+                                          settings                             \\
+  eclErrorInsufficientAcceleratorMemory & Not enough accelerator memory available to perform the 
+                                          operation                            \\
+  eclErrorUnknown                       & Unknown error                        \\
+  \hline
+\end{tabularx}
+
+\subsection{\texttt{ecl::kernel\_id\_t}}
+
+Constant string with the name of a function to be executed on an accelerator.
+
+\subsection{\texttt{ecl::memory\_hint}}
+
+\begin{tabularx}{\linewidth}{|>{\texttt\bgroup}l<{\egroup}|X|}
+  \hline
+  \textnormal{Value} & Description \\
+  \hline
+  \hline
+  ECL\_GLOBAL\_MALLOC\_CENTRALIZED & Prefer centralized (host\hyp{}mapped) implementation for global 
+  malloc \\
+  ECL\_GLOBAL\_MALLOC\_DISTRIBUTED & Prefer distributed copies implementation for global malloc \\
+  \hline
+\end{tabularx}
+
+
+\subsection{\texttt{ecl::protection}}
+
+\begin{tabularx}{\linewidth}{|>{\texttt\bgroup}l<{\egroup}|X|}
+  \hline
+  \textnormal{Value} & Description \\
+  \hline
+  \hline
+  ECL\_PROT\_NONE  & No access rights for the mapping \\
+  ECL\_PROT\_READ  & Read\hyp{}only access rights for the mapping \\
+  ECL\_PROT\_WRITE & Write\hyp{}only access rights for the mapping \\
+  ECL\_PROT\_READWRITE & Read\slash{}Write access rights for the mapping \\
+  \hline
+\end{tabularx}
+
+\section{GMAC\slash HPE C++ API}
+
+\subsection{\texttt{ecl::error\_t ecl::kernel::kernel()}}
+
+\textbf{Description}: Creates a OpenCL kernel handler.
+
+\subsection{\texttt{ecl::kernel::kernel(std::string name, ecl::error \&err)}}
+
+\textbf{Description}: Creates and gets an OpenCL kernel handler. \\
+\textbf{Parameters}
+\begin{itemize}
+  \item \texttt{name}: string with the name of the OpenCL kernel to be retrieved
+  \item \texttt{err}: Reference to store the error code.\ eclSuccess on success, an error code
+  otherwise
+\end{itemize}
+
+\subsection{\texttt{template <typename T>\\ecl::error\_t ecl::kernel::setArg(unsigned index, size\_t 
+size, const T *addr)}}
+
+\textbf{Description}: Adds an argument to be used by the following call to launch()\\
+\textbf{Parameters}
+\begin{itemize}
+  \item \texttt{index}: Index of the parameter being added in the parameter list
+  \item \texttt{size}: Size, in bytes, of the argument
+  \item \texttt{addr}: Memory address where the param is stored
+\end{itemize}
+\textbf{Returns}: eclSucces on success, an error code otherwise
+
+\subsection{\texttt{template <typename T>\\ecl::error\_t ecl::kernel::setArg(unsigned index, T 
+val)}}
+
+\textbf{Description}: Adds an argument to be used by the following call to callNDRange()\\
+\textbf{Parameters}
+\begin{itemize}
+  \item \texttt{index}: Index of the parameter being added to the parameter list
+  \item \texttt{val}: Parameter to be stored
+\end{itemize}
+\textbf{Returns}: eclSucces on success, an error code otherwise
+
+\subsection{\texttt{ecl::error\_t callNDRange(size\_t workDim, size\_t *globalWorkOffset, size\_t 
+*globalWorkSize, size\_t *localWorkSize)}}
+
+\textbf{Description}: Launches a kernel execution with the specified device work configuration\\
+\textbf{Parameters}
+\begin{itemize}
+  \item \texttt{workDim}: Number of elements for the work size arrays.
+  \item \texttt{globalWorkOffset}: Array of \emph{workDim} unsigned elements that specifies the work 
+  offset for the work items.
+  \item \texttt{globalWorkSize}: Array of \emph{workDim} unsigned elements that specifies the global 
+  number of work items.
+  \item \texttt{localWorkSize}: Array of \emph{workDim} unsigned elements that specifies the number 
+  of work items per work group.
+\end{itemize}
+\textbf{Returns}: eclSucces on success, an error code otherwise
+
+
+\subsection{\texttt{ecl::error ecl::compileSource(const char *code, std::string flags = "")}}
+
+\textbf{Description}: Prepares the OpenCL code to be used by the application. \\
+\textbf{Parameters}
+\begin{itemize}
+  \item \texttt{code} String that contains the code to be prepared
+  \item \texttt{flags}: String that contains the compilation flags or empty string
+\end{itemize}
+\textbf{Returns}: eclSuccess on success, an error code otherwise
+
+\subsection{\texttt{ecl::error ecl::compileSourceFile(std::string path, std::string flags = "")}}
+
+\textbf{Description}: Prepares the OpenCL code in the specified file to be used by the application.  \\
+\textbf{Parameters}
+\begin{itemize}
+  \item \texttt{path}: String that contains the path to the file with the source code to be prepared
+  \item \texttt{flags}: String that contains the compilation flags or empty string
+\end{itemize}
+\textbf{Returns}: eclSuccess on success, an error code otherwise
+
+\subsection{\texttt{ecl::error ecl::compileSourceStream(std::istream \&in, std::string flags = "")}}
+
+\textbf{Description}: Prepares the OpenCL code in the specified stream to be used by the 
+application.  \\
+\textbf{Parameters}
+\begin{itemize}
+  \item \texttt{path}: Reference to an input stream
+  \item \texttt{flags}: String that contains the compilation flags or empty string
+\end{itemize}
+\textbf{Returns}: eclSuccess on success, an error code otherwise
+
+\subsection{\texttt{ecl::error ecl::compileBinary(const unsigned char *binary, size\_t size, 
+std::string flags = "")}}
+
+\textbf{Description}: Prepares the OpenCL binary to be used by the application.  \\
+\textbf{Parameters}
+\begin{itemize}
+  \item \texttt{binary}: Pointer to the array that contains the binary code
+  \item \texttt{size}: Size in bytes of the array that contains the binary code
+  \item \texttt{flags}: String that contains the compilation flags or empty string
+\end{itemize}
+\textbf{Returns}: eclSuccess on success, an error code otherwise
+
+\subsection{\texttt{ecl::error ecl::compileBinaryFile(std::string path, std::string flags = "")}}
+
+\textbf{Description}: Prepares the OpenCL code in the specified file to be used by the application.  \\
+\textbf{Parameters}
+\begin{itemize}
+  \item \texttt{path}: String that contains the path to the file with the binary code to be prepared
+  \item \texttt{flags}: String that contains the compilation flags or empty string
+\end{itemize}
+\textbf{Returns}: eclSuccess on success, an error code otherwise
+
+\subsection{\texttt{ecl::error ecl::compileBinaryStream(std::istream \&in, std::string flags = "")}}
+
+\textbf{Description}: Prepares the OpenCL code in the specified stream to be used by the 
+application.  \\
+\textbf{Parameters}
+\begin{itemize}
+  \item \texttt{in}: Reference to an input stream that contains the binary code
+  \item \texttt{flags}: String that contains the compilation flags or empty string
+\end{itemize}
+\textbf{Returns}: eclSuccess on success, an error code otherwise
+
+
+\subsection{\texttt{unsigned ecl::getNumberOfAccelerators()}}
+
+\textbf{Description}: Get the number of available accelerators in the system
+\textbf{Returns}: Number of accelerators
+
+\subsection{\texttt{unsigned ecl::getFreeMemory()}}
+
+\textbf{Description}: Gets the amount of available accelerator memory in bytes
+\textbf{Returns}: Amount (in bytes) of the available accelerator memory
+
+\subsection{\texttt{ecl::error ecl::migrate(unsigned acc)}}
+
+\textbf{Description}: Attach the calling CPU thread to the given accelerator
+\textbf{Parameters}
+\begin{itemize}
+  \item \texttt{acc}: Id of the accelerator to attach to
+\end{itemize}
+\textbf{Returns}: eclSuccess on success, an error code otherwise
+
+\subsection{\texttt{ecl::error ecl::malloc(void **devPtr, size\_t count)}}
+
+\textbf{Description}: Allocate shared memory
+\begin{itemize}
+  \item \texttt{devPtr}: Memory address of the pointer to store the allocated memory
+  \item \texttt{count}: Size (in bytes) of the memory to be allocated
+\end{itemize}
+\textbf{Returns}: eclSuccess on success, an error code otherwise
+
+\subsection{\texttt{ecl::error ecl::globalMalloc(void **devPtr, size\_t count, ecl\_memory\_hint 
+hint dv(ECL\_GLOBAL\_MALLOC\_CENTRALIZED))}}
+
+\textbf{Description}: Allocate shared memory accessible from all accelerators
+\begin{itemize}
+  \item \texttt{devPtr}: Memory address of the pointer to store the allocated memory
+  \item \texttt{count}: Size (in bytes) of the memory to be allocated
+  \item \texttt{hint}: Type of desired global memory
+\end{itemize}
+\textbf{Returns}: eclSuccess on success, an error code otherwise
+
+\subsection{\texttt{ecl::error ecl:free(const void *cpuPtr)}}
+
+\textbf{Description}: Release shared memory
+\begin{itemize}
+  \item \texttt{cpuPtr}: Shared memory address to be released
+\end{itemize}
+\textbf{Returns}: eclSuccess on success, an error code otherwise
+
+\subsection{\texttt{ecl::error ecl::threadSynchronize()}}
+
+\textbf{Description}: Wait until all previous accelerator calls are completed
+\textbf{Returns}: eclSuccess on success, an error code otherwise
+
+\subsection{\texttt{ecl::error ecl::getLastError()}}
+
+\textbf{Description}: Get the last error produced by GMAC
+\textbf{Returns}: eclSuccess on success, an error code otherwise
+
+\subsection{\texttt{void *ecl::memset(void *cpuPtr, int c, size\_t count)}}
+
+\textbf{Description}: Initialize a shared memory region
+\begin{itemize}
+  \item \texttt{cpuPtr}: Starting shared memory address.
+  \item \texttt{c}: Value used to be initialized
+  \item \texttt{count}: Size (in bytes) of the shared memory region to be initialized
+\end{itemize}
+\textbf{Returns}: Shared memory address that has been initialized
+
+\subsection{\texttt{void *ecl::memcpy(void *cpuDstPtr, const void *cpuSrcPtr, size\_t count)}}
+
+\textbf{Description}: Copy data between shared memory regions
+\begin{itemize}
+  \item \texttt{cpuDstPtr}: Destination shared memory
+  \item \texttt{cpuSrcPtr}: Source shared memory
+  \item \texttt{count}: Size (in bytes) to be copied
+\end{itemize}
+\textbf{Returns}: Destination shared memory address
+
+%\subsection{\texttt{void ecl::send(THREAD\_T tid)}}
+%
+%\textbf{Description}: Send the execution mode associated to the current CPU thread to another CPU thread
+%\begin{itemize}
+%  \item \texttt{tid}: Thread ID of the destionation CPU thread
+%\end{itemize}
+%
+%\subsection{\texttt{void ecl::receive()}}
+%
+%\textbf{Description}: Receive an execution mode from another CPU thread
+%
+%\subsection{\texttt{void ecl::sendReceive(THREAD\_T tid)}}
+%
+%\textbf{Description}: Send the execution mode associated to the current CPU thread and wait to receive a new execution mode
+%\begin{itemize}
+%  \item \texttt{tid}: Thread ID of the destination CPU thread
+%\end{itemize}
+%
+%\subsection{\texttt{void ecl::copy(THREAD\_T tid)}}
+%
+%\textbf{Description}: Create a copy of the execution mode associate to the current CPU thread and send that copy another CPU thread
+%\begin{itemize}
+%  \item \texttt{tid}: Thread ID of the destination CPU thread
+%\end{itemize}
+
+% vim: set spell ft=tex fo=aw2t expandtab sw=2 tw=100:

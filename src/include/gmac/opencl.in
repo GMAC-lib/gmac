@@ -1,0 +1,634 @@
+/* Copyright (c) 2011 University of Illinois
+                   Universitat Politecnica de Catalunya
+                   All rights reserved.
+
+Developed by: IMPACT Research Group / Grup de Sistemes Operatius
+              University of Illinois / Universitat Politecnica de Catalunya
+              http://impact.crhc.illinois.edu/
+              http://gso.ac.upc.edu/
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to
+deal with the Software without restriction, including without limitation the
+rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+sell copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+  1. Redistributions of source code must retain the above copyright notice,
+     this list of conditions and the following disclaimers.
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimers in the
+     documentation and/or other materials provided with the distribution.
+  3. Neither the names of IMPACT Research Group, Grup de Sistemes Operatius,
+     University of Illinois, Universitat Politecnica de Catalunya, nor the
+     names of its contributors may be used to endorse or promote products
+     derived from this Software without specific prior written permission.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+WITH THE SOFTWARE.  */
+
+/**
+ * \file gmac/opencl
+ *
+ * GMAC/OpenCL C++ interface
+ */
+
+#ifndef GMAC_OPENCL_CPP_H_
+#define GMAC_OPENCL_CPP_H_
+
+#ifndef __cplusplus
+#error "This header can only be included in C++ programs"
+#endif
+
+#include <string>
+#include <istream>
+
+#include <gmac/opencl.h>
+
+namespace @OPENCL_API_PREFIX@ {
+
+typedef @OPENCL_API_PREFIX@_error error;
+
+typedef @OPENCL_API_PREFIX@_memory_hint memory_hint;
+typedef @OPENCL_API_PREFIX@_protection protection;
+
+class kernel_error {
+    friend class kernel;
+
+    /** "C" kernel handler used by the object */
+    @OPENCL_API_PREFIX@_kernel kernel_;
+
+    error launchError_;
+    error execError_;
+
+    bool synced_;
+
+    kernel_error(@OPENCL_API_PREFIX@_kernel kernel, error launchErr) :
+        kernel_(kernel),
+        launchError_(launchErr),
+        synced_(false)
+    {
+    }
+
+    error getError()
+    {
+        if (launchError_ != @OPENCL_API_PREFIX@Success) {
+            return launchError_;
+        } else {
+            if (synced_ == true) {
+                return execError_;
+            } else {
+                execError_ = @OPENCL_API_PREFIX@GetKernelError(kernel_);
+                synced_ = true;
+                return execError_;
+            }
+        }
+    }
+public:
+    operator @OPENCL_API_PREFIX@_error()
+    {
+        return getError();
+    }
+
+    error getLaunchError() const
+    {
+        return launchError_;
+    }
+
+    error getExecutionError()
+    {
+        return getError();
+    }
+};
+
+class kernel {
+private:
+    /** "C" kernel handler used by the object */
+    @OPENCL_API_PREFIX@_kernel kernel_;
+
+    /** Helper class used to detect pointer parameters for setArg */
+    template <typename T>
+    struct Param {
+        T value_;
+        Param(T init) :
+            value_(init)
+        {
+        }
+
+        error setArg(ecl_kernel kernel, unsigned index, GmacProtection /* dummy */)
+        {
+            return ::@OPENCL_API_PREFIX@SetKernelArg(kernel, index, sizeof(value_), &value_);
+        }
+    };
+
+    /** Helper class used to detect pointer parameters for setArg */
+    template <typename T>
+    struct Param<T *> {
+        T *ptr_;
+        Param(T *init) :
+            ptr_(init)
+        {
+        }
+
+        error setArg(ecl_kernel kernel, unsigned index, GmacProtection prot)
+        {
+            return ::@OPENCL_API_PREFIX@SetKernelArgPtrComplex(kernel, index, ptr_, prot);
+        }
+    };
+
+    /**
+     * Gets a "C" kernel handler for the specified kernel
+     *
+     * \param name Name of the kernel
+     *
+     * \return @OPENCL_API_PREFIX@Success on success, an error code otherwise
+     */
+    error getByName(std::string name);
+
+    
+public:
+        /**
+     * Creates an returns a pointer to a C++ kernel handler for the specified kernel
+     *
+     * \param name Name of the kernel
+     *
+     * \return A pointer C++ kernel handler on success, NULL otherwise
+     */
+    static
+    kernel *get(std::string name);
+
+    /**
+     * Constructs C++ kernel handler for the specified kernel
+     *
+     * \param name Name of the kernel
+     * \param err A reference to set the return value. @OPENCL_API_PREFIX@Success on success, an error code otherwise
+     */
+    kernel(std::string name, error &err);
+
+    /** Releases the resources used by the C++ kernel handler */
+    ~kernel();
+
+    /**
+     * Assigns a C++ kernel handler to the object
+     *
+     * \param handler Constant reference to the C++ handler to be assigned
+     *
+     * \return A reference to the current C++ descriptor
+     */
+    @OPENCL_API_PREFIX@::kernel &operator=(const kernel &handler);
+
+    /**
+     * Sets an argument to be used by the following call to callNDRange()
+     *
+     * \param index Index of the parameter being set in the parameter list
+     * \param val Value to be set
+     *
+     * \return Error code
+     */
+    template <typename T>
+    error setArg(unsigned index, T val, GmacProtection prot = GMAC_PROT_READWRITE);
+
+    /**
+     * Launches a kernel execution
+     *
+     * \param workDim Number of dimensions of the work
+     * \param globalWorkOffset Array of workDim elements that represent the work offset for the
+     * kernel execution, or NULL
+     * \param globalWorkSize Array of workDim elements that represent the global number of
+     * work-items for the kernel execution
+     * \param localWorkSize Array of workDim elements that represent the number of work-items
+     * per work-group for the kernel execution
+     *
+     * \return @OPENCL_API_PREFIX@Success if success, an error code otherwise
+     */
+
+    kernel_error callNDRange(const config &globalWorkSize, const config &localWorkSize = config::null, const config &globalWorkOffset = config::null);
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    class launch {
+        friend class kernel;
+    private:
+        kernel &kernel_;
+        const config &global_;
+        const config &local_;
+        const config &offset_;
+
+        template <typename P1, typename ...Pn>
+        kernel_error __launch(unsigned index, P1 p1, Pn ...pn);
+
+        kernel_error __launch(unsigned index);
+
+        launch(kernel &k, const config &globalWorkSize, const config &localWorkSize = config::null, const config &globalWorkOffset = config::null);
+    public:
+
+        template <typename P1, typename ...Pn>
+        kernel_error operator()(P1 p1, Pn ...pn);
+    };
+
+    friend class launch;
+
+    kernel::launch operator()(const config &globalWorkSize, const config &localWorkSize = config::null, const config &globalWorkOffset = config::null);
+#endif
+};
+
+/*
+ * BEGIN CLASS IMPLEMENTATION
+ */
+
+inline
+error kernel::getByName(std::string name)
+{
+    error ret = ::@OPENCL_API_PREFIX@GetKernel(name.c_str(), &kernel_);
+    return ret;
+}
+
+inline
+kernel *kernel::get(std::string name)
+{
+    error err;
+    kernel *launch = new kernel(name, err);
+    if (err == @OPENCL_API_PREFIX@Success) return launch;
+    delete launch;
+    return NULL;
+}
+
+inline
+kernel::kernel(std::string name, error &err)
+{
+    err = @OPENCL_API_PREFIX@Success;
+    if (getByName(name) != @OPENCL_API_PREFIX@Success) err = @OPENCL_API_PREFIX@ErrorInvalidAcceleratorFunction;
+}
+
+inline
+kernel::~kernel()
+{
+    @OPENCL_API_PREFIX@ReleaseKernel(kernel_);
+}
+
+inline
+kernel &kernel::operator=(const kernel &handler)
+{
+    kernel_ = handler.kernel_;
+    return *this;
+}
+
+template <typename T>
+inline
+error kernel::setArg(unsigned index, T val, GmacProtection prot)
+{
+    Param<T> p(val);
+    return p.setArg(kernel_, index, prot);
+}
+
+inline
+kernel_error kernel::callNDRange(const config &globalWorkSize, const config &localWorkSize, const config &globalWorkOffset)
+{
+    error err = ::@OPENCL_API_PREFIX@CallNDRange(kernel_, globalWorkSize.getDims(),
+                                                          globalWorkOffset.getAddr(),
+                                                          globalWorkSize.getAddr(),
+                                                          localWorkSize.getAddr());
+    kernel_error kernel_err(kernel_, err);
+    return kernel_err;
+}
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+
+template <typename P1, typename ...Pn>
+kernel_error kernel::launch::__launch(unsigned index, P1 p1, Pn ...pn)
+{
+    error err = kernel_.setArg(index, p1);
+    if (err != gmacSuccess) {
+        kernel_error kernel_err(kernel_.kernel_, err);
+        return kernel_err;
+    }
+    return __launch(index + 1, pn...);
+}
+
+kernel_error kernel::launch::__launch(unsigned index)
+{
+    error err = ::@OPENCL_API_PREFIX@CallNDRange(kernel_.kernel_, global_.getDims(),
+                                                                  offset_.getAddr(),
+                                                                  global_.getAddr(),
+                                                                  local_.getAddr());
+    kernel_error kernel_err(kernel_.kernel_, err);
+    return kernel_err;
+}
+
+template <typename P1, typename ...Pn>
+kernel_error kernel::launch::operator()(P1 p1, Pn ...pn)
+{
+    return __launch(0, p1, pn...);
+}
+
+kernel::launch::launch(kernel &k, const config &global, const config &local, const config &offset) :
+    kernel_(k),
+    global_(global),
+    local_(local),
+    offset_(offset)
+{
+}
+
+kernel::launch
+kernel::operator()(const config &globalWorkSize, const config &localWorkSize, const config &globalWorkOffset)
+{
+    return launch(*this, globalWorkSize, localWorkSize, globalWorkOffset);
+}
+
+#endif
+
+/*
+ * END CLASS IMPLEMENTATION
+ */
+
+/**
+ * \fn static inline error compileSource(std::string code, std::string flags = "")
+ * Prepares the OpenCL code to be used by the applications
+ *
+ * \param code Pointer to the NULL-terminated string that contains the code
+ * \param flags Compilation flags or empty string
+ *
+ * \return @OPENCL_API_PREFIX@Success if success, an error code otherwise
+ */
+static inline error compileSource(std::string code, std::string flags = "")
+{
+    return ::@OPENCL_API_PREFIX@CompileSource(code.c_str(), flags.c_str());
+}
+
+/**
+ * Prepares the OpenCL code to be used by the applications
+ *
+ * \param path String with the path of the file that contains the code
+ * \param flags Compilation flags or empty string
+ *
+ * \return @OPENCL_API_PREFIX@Success if success, an error code otherwise
+ */
+static inline error compileSourceFile(std::string path, std::string flags = "")
+{
+    return ::@OPENCL_API_PREFIX@CompileSourceFile(path.c_str(), flags.c_str());
+}
+
+/**
+ * Prepares the OpenCL code to be used by the applications
+ *
+ * \param in Input stream that reads the code
+ * \param flags Compilation flags or empty string
+ *
+ * \return @OPENCL_API_PREFIX@Success if success, an error code otherwise
+ */
+static inline error compileSourceStream(std::istream &in, std::string flags = "")
+{
+    if (!in.good()) return gmacErrorInvalidValue;
+    in.seekg (0, std::ios::end);
+    std::streampos length = in.tellg();
+    in.seekg (0, std::ios::beg);
+    if (length == std::streampos(0)) return gmacSuccess;
+    // Allocate memory for the code
+    char *buffer = new char[int(length)+1];
+    // Read data as a block
+    in.read(buffer,length);
+    buffer[static_cast<int>(length)] = '\0';
+    error ret = ::@OPENCL_API_PREFIX@CompileSource(buffer, flags.c_str());
+    delete [] buffer;
+    return ret;
+}
+
+/**
+ * Prepares the OpenCL binary to be used by the applications
+ *
+ * \param binary Pointer to the array that contains the binary code
+ * \param size Size in bytes of the array that contains the binary code
+ * \param flags Compilation flags or empty string
+ *
+ * \return @OPENCL_API_PREFIX@Success if success, an error code otherwise
+ */
+static inline error compileBinary(const unsigned char *binary, size_t size, std::string flags = "")
+{
+    return ::@OPENCL_API_PREFIX@CompileBinary(binary, size, flags.c_str());
+}
+
+/**
+ * Prepares the OpenCL binary code to be used by the applications
+ *
+ * \param path String with the path of the file that contains the binary code
+ * \param flags Compilation flags or empty string
+ *
+ * \return @OPENCL_API_PREFIX@Success if success, an error code otherwise
+ */
+static inline error compileBinaryFile(std::string path, std::string flags = "")
+{
+    return ::@OPENCL_API_PREFIX@CompileBinaryFile(path.c_str(), flags.c_str());
+}
+
+/**
+ * Prepares the OpenCL code to be used by the applications
+ *
+ * \param in Input stream that reads the code
+ * \param flags Compilation flags or empty string
+ *
+ * \return @OPENCL_API_PREFIX@Success if success, an error code otherwise
+ */
+static inline error compileBinaryStream(std::istream &in, std::string flags = "")
+{
+    if (!in.good()) return gmacErrorInvalidValue;
+    in.seekg (0, std::ios::end);
+    std::streampos length = in.tellg();
+    in.seekg (0, std::ios::beg);
+    if (length == std::streampos(0)) return gmacSuccess;
+    // Allocate memory for the code
+    unsigned char *buffer = new unsigned char[int(length)+1];
+    // Read data as a block
+    in.read((char *) buffer,length);
+    buffer[static_cast<int>(length)] = '\0';
+    error ret = ::@OPENCL_API_PREFIX@CompileBinary(buffer, static_cast<int>(length), flags.c_str());
+    delete [] buffer;
+    return ret;
+}
+
+/**
+ * \sa @OPENCL_API_PREFIX@GetNumberOfAccelerators
+ */
+static inline
+unsigned getNumberOfAccelerators()
+{
+    return ::@OPENCL_API_PREFIX@GetNumberOfAccelerators();
+}
+
+/**
+ * \sa @OPENCL_API_PREFIX@GetCurrentAcceleratorId
+ */
+static inline
+unsigned getCurrentAcceleratorId()
+{
+    return ::@OPENCL_API_PREFIX@GetCurrentAcceleratorId();
+}
+
+/**
+ * \sa @OPENCL_API_PREFIX@GetAcceleratorInfo
+ */
+static inline
+unsigned getAcceleratorInfo(unsigned acc, @OPENCL_API_PREFIX@_accelerator_info *info)
+{
+    return ::@OPENCL_API_PREFIX@GetAcceleratorInfo(acc, info);
+}
+
+/**
+ * \sa @OPENCL_API_PREFIX@GetFreeMemory
+ */
+static inline
+error getFreeMemory(unsigned acc, size_t *freeMem)
+{
+    return ::@OPENCL_API_PREFIX@GetFreeMemory(acc, freeMem);
+}
+
+/**
+ * \sa @OPENCL_API_PREFIX@Migrate
+ */
+static inline
+error migrate(unsigned acc)
+{
+    return ::@OPENCL_API_PREFIX@Migrate(acc);
+}
+
+/**
+ * \sa @OPENCL_API_PREFIX@MemoryMap
+ */
+static inline
+error memoryMap(void *cpuPtr, size_t count, protection prot)
+{
+    return ::@OPENCL_API_PREFIX@MemoryMap(cpuPtr, count, prot);
+}
+
+/**
+ * \sa @OPENCL_API_PREFIX@MemoryUnmap
+ */
+static inline
+error memoryUnmap(void *cpuPtr, size_t count)
+{
+    return ::@OPENCL_API_PREFIX@MemoryUnmap(cpuPtr, count);
+}
+
+/**
+ * \sa @OPENCL_API_PREFIX@Malloc
+ */
+static inline
+error malloc(void **devPtr, size_t count)
+{
+    return ::@OPENCL_API_PREFIX@Malloc(devPtr, count);
+}
+
+/**
+ * \sa @OPENCL_API_PREFIX@GlobalMalloc
+ */
+static inline
+error globalMalloc(void **devPtr, size_t count, memory_hint hint = ECL_GLOBAL_MALLOC_CENTRALIZED)
+{
+    return ::@OPENCL_API_PREFIX@GlobalMalloc(devPtr, count, hint);
+}
+
+/**
+ * \sa @OPENCL_API_PREFIX@Free
+ */
+static inline
+error free(void *cpuPtr)
+{
+    return ::@OPENCL_API_PREFIX@Free(cpuPtr);
+}
+
+/**
+ * \sa @OPENCL_API_PREFIX@GetLastError
+ */
+static inline
+error getLastError()
+{
+    return ::@OPENCL_API_PREFIX@GetLastError();
+}
+
+/**
+ * \sa @OPENCL_API_PREFIX@Memset
+ */
+static inline
+void *memset(void *cpuPtr, int c, size_t count)
+{
+    return ::@OPENCL_API_PREFIX@Memset(cpuPtr, c, count);
+}
+
+/**
+ * \sa @OPENCL_API_PREFIX@Memcpy
+ */
+static inline
+void *memcpy(void *cpuDstPtr, const void *cpuSrcPtr, size_t count)
+{
+    return ::@OPENCL_API_PREFIX@Memcpy(cpuDstPtr, cpuSrcPtr, count);
+}
+
+/**
+ * \sa @OPENCL_API_PREFIX@DeviceSend
+ */
+static inline
+void deviceSend(THREAD_T tid)
+{
+    ::@OPENCL_API_PREFIX@DeviceSend(tid);
+}
+
+/**
+ * \sa @OPENCL_API_PREFIX@DeviceRelease
+ */
+static inline
+void deviceReceive(void)
+{
+    ::@OPENCL_API_PREFIX@DeviceReceive();
+}
+
+/**
+ * \sa @OPENCL_API_PREFIX@DeviceSendReceive
+ */
+static inline
+void deviceSendReceive(THREAD_T tid)
+{
+    ::@OPENCL_API_PREFIX@DeviceSendReceive(tid);
+}
+
+/**
+ * \sa @OPENCL_API_PREFIX@DeviceCopy
+ */
+static inline
+void deviceCopy(THREAD_T tid)
+{
+    ::@OPENCL_API_PREFIX@DeviceCopy(tid);
+}
+
+} // namespace @OPENCL_API_PREFIX@
+
+
+#include <memory>
+
+#include <gmac/new>
+
+#define USE_TR1_HEADER @USE_TR1_HEADER@
+
+#ifndef _MSC_VER
+#if USE_TR1_HEADER == 1
+#include <tr1/memory>
+#endif
+#endif // _MSC_VER
+
+#define USE_BOOST_HEADER @USE_BOOST_HEADER@
+#if USE_BOOST_HEADER == 1
+#include <boost/version.hpp>
+#include <boost/multi_array.hpp>
+#endif
+
+namespace @OPENCL_API_PREFIX@ {
+    static ::__gmac_allocator allocator;
+
+    #include <gmac/shared_ptr>
+    #include <gmac/static>
+
+} // namespace @OPENCL_API_PREFIX@
+
+#endif /* GMAC_OPENCL_CPP_H_ */
+
+/* vim:set ft=cpp backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

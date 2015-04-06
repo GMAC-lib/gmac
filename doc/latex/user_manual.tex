@@ -1,0 +1,51 @@
+% rubber:rules templates/extra/rubberrules.ini
+
+\documentclass[letterpaper,twoside,11pt,final]{memoir}
+
+\usepackage{graphicx}
+\usepackage{tabularx}
+\usepackage{wrapfig}
+\usepackage{listings}
+\usepackage{xspace}
+\usepackage{hyphenat}
+%\usepackage{hyperref}
+
+\newcommand{\eg}{e.g.,\xspace}
+\newcommand{\ie}{i.e.,\xspace}
+\newcommand{\etc}{etc.\@\xspace}
+\newcommand{\etal}{et.\ al.\xspace}
+\newcommand{\vs}{vs.\xspace}
+
+\chapterstyle{bianchi}
+\lstset{numbers=left, tabsize=4, captionpos=b, basicstyle=\footnotesize\ttfamily}
+
+\begin{document}
+\input{title}
+
+\frontmatter
+\input{history}
+\clearpage
+
+\tableofcontents
+\clearpage
+\listoffigures
+\clearpage
+\lstlistoflistings
+
+\mainmatter
+\input{overview/main}
+\input{hpe/main}
+\input{cl/main}
+
+\appendix
+\input{api/main}
+\input{installation/main}
+\input{opencl/main}
+
+
+\backmatter
+\printindex
+
+\end{document}
+
+% vim: set spell ft=tex fo=aw2t expandtab sw=2 tw=100:

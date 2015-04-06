@@ -1,0 +1,64 @@
+\section{GNU\slash Linux}
+
+\subsection{Requisites}
+
+To compile GMAC, the following software must be installed:
+\begin{itemize}
+\item CMake 2.8 or higher (http://www.cmake.org)
+\item GCC 4.3 or higher (http://gcc.gnu.org)
+\item AMD APP SDK 2.5 or higher (http://developer.amd.com/gpu/AMDAPPSDK)
+\end{itemize}
+
+Additionally, to build the GMAC documentation, there are the following extra requisites:
+\begin{itemize}
+\item Doxygen (http://www.doxygen.org)
+\item \LaTeX (http://www.latex-project.org) with the following packages: Memoir (document class), 
+graphicx, tabularx, wrapfig, listings, xspace, hyphenat, and hyperref.
+\item Rubber (https://launchpad.net/rubber)
+\item GNOME Dia (http://projects.gnome.org/dia)
+\end{itemize}
+
+\subsection{Compilation and Installation}
+First you need to extract GMAC from the tarbal file, by typing:
+\begin{verbatim}
+tar -jxf gmac-0.0.3.tar.bz2
+\end{verbatim}
+This will create a directory called \texttt{gmac}. Although GMAC can be compiled in the same 
+directory than the source file, we recommend to build it in a separate directory.
+\begin{verbatim}
+mkdir -p gmac/build
+cd gmac/build
+\end{verbatim}
+
+GMAC uses CMake to generate platform\hyp{}specific compilation scripts, so the CMake GUI can be used 
+to configure GMAC\@. However, GMAC includes a shell script to configure GMAC from the 
+command\hyp{}line without any need to run any GUI\@. If you are interested on configure GMAC using 
+the CMake GUI, please refer to the configuration process for Windows. The configuration script for 
+GMAC supports the following options:
+\begin{itemize}
+\item \texttt{--enable-opencl} \\ Enable the compilation for OpenCL
+\item \texttt{--enable-debug} \\ Compile GMAC in debug mode, providing symbol information, GMAC 
+built\hyp{}in extra checking, and no optimizations.
+\item \texttt{--enable-static} \\ Compile GMAC as a static library (by default, GMAC gets compiled 
+as a dynamic library)
+\item \texttt{--enable-tests} \\ Compile GMAC tests
+\item \texttt{--enable-doc} \\ Compile GMAC documentation
+\item \texttt{--enable-trace-console} \\ Dump execution traces to the console
+\item \texttt{--with-opencl-include = \emph{<path>}} \\ Sets the path to the OpenCL header files
+\item \texttt{--with-opencl-library = \emph{<path>}} \\ Sets the path to the OpenCL libraries
+\end{itemize}
+
+Assuming that AMD APP SDK is installed in \texttt{/opt/ati}, configure GMAC by executing
+\begin{verbatim}
+../configure --enable-opencl --with-opencl-include=/opt/ati/include 
+--with-opencl-library=/opt/ati/lib
+\end{verbatim}
+
+Finally, to compile and install GMAC, you just need to type in the command line:
+\begin{verbatim}
+make
+make install
+\end{verbatim}
+
+
+% vim: set spell ft=tex fo=aw2t expandtab sw=2 tw=100:

@@ -1,0 +1,107 @@
+\section{Single\hyp{}Threaded Applications}
+
+We use a simple vector addition example to illustrate the fundamentals of GMAC programming. In this 
+section, our goal is to build an application that reads two variable\hyp{}sized input floating point 
+vectors from a file, computes a third output floating point vector as an addition of the two input 
+vectors, and stores that vector in a file.
+
+\subsection{The Kernel code}
+Listing~\ref{lst:hpe:vecadd} shows the vector addition kernel code. This code might be stored as a 
+global constant char array (\ie \texttt{const char *}) in the application source code, or as a text 
+file. We will assume the latter option, where the code in Listing~\ref{lst:hpe:vecadd} is in a file 
+called \texttt{vecadd.cl} in the same directory than the application binary.
+
+\lstinputlisting[float,
+    language=C++,
+    frame=tb,
+    caption={Vector addition kernel code.},
+    label={lst:hpe:vecadd}]{hpe/vecadd.cl}
+
+A minor comment about the code in Listing~\ref{lst:hpe:vecadd} is the usage of \texttt{\_\_global 
+float const * restrict} for the input  vectors \texttt{a} and \texttt{b}. By explicitly specifying 
+that the input vectors are constant during the kernel execution (\ie \texttt{const}) and no other 
+pointers are used to access them (\ie \texttt{restrict}), the GPU will cache the contents of that 
+vectors, greatly reducing the kernel execution time.
+
+\subsection{OpenCL Setup and Kernel Loading and Compilation}
+Setting up the OpenCL run\hyp{}time tends to be a tedious and repetitive task which requires several 
+lines of code. Analogously, loading the contents of files containing OpenCL kernels is also another 
+annoyance of OpenCL programming. Listing~\ref{lst:opencl:init} shows the necessary source code to 
+setup OpenCL, and load and compile the kernel code. GMAC requires no initialization code and 
+provides a simplified path for kernel loading and compilation, as shown in 
+Listing~\ref{lst:hpe:load}. 
+
+\lstinputlisting[float,
+    language=C,
+    frame=tb,
+    caption={GMAC\slash HPE code to make OpenCL code available to the application.},
+    label={lst:hpe:load}]{hpe/load.c}
+
+\subsection{Allocating and Releasing Data Structures}
+Data structures used by kernels are allocated using the \texttt{eclMalloc(void **, size\_t)} API 
+call. The first parameter is a pointer to the variable which will hold the CPU pointer used to 
+access the allocated data structure. The second parameter is the size, in bytes, of the memory to be 
+allocated. Finally, \texttt{eclMalloc()} returns an error code specifying whether the allocation 
+succeeded (\texttt{eclSuccess}) or the condition that prevented the memory allocation.  
+Listing~\ref{lst:hpe:alloc} shows the source code required to allocate the input and output vectors.  
+
+\lstinputlisting[float,
+    language=C,
+    frame=tb,
+    caption={GMAC\slash HPE code to allocate and initialized the input and output vectors.},
+    label={lst:hpe:alloc}]{hpe/alloc.c}
+
+Note that the CPU pointer returned by GMAC can be passed as a parameter to any other function (\eg 
+\texttt{fread()} in Listing~\ref{lst:hpe:alloc}). This code also uses the GMAC API call 
+\texttt{eclFree(void *)}, which is used to release the memory allocated by calls to 
+\texttt{eclMalloc()}.
+
+The C++ GMAC interface offers type\hyp{}safe allocation calls using the \texttt{new} operator, as 
+shown in Figure~\ref{lst:hpe:new}. This allocation call will return a \texttt{NULL} value if the 
+allocation was not successful.
+\lstinputlisting[float,
+    language=C++,
+    frame=tb,
+    caption={GMAC\slash HPE C++ code to allocate and initialized the input and output vectors.},
+    label={lst:hpe:new}]{hpe/new.cpp}
+
+
+\subsection{Calling Kernels}
+GMAC\slash HPE uses a kernel call interface similar to OpenCL\@. The programmer is required to set 
+the kernel dimensions, pass the kernel parameters, and call the kernel. Listing~\ref{lst:hpe:call} 
+shows the code required to invoke the vector addition kernel.
+
+\lstinputlisting[float,
+    language=C,
+    frame=tb,
+    caption={GMAC\slash HPE code to call the vector addition kernel.},
+    label={lst:hpe:call}]{hpe/call.c}
+
+First, a handler to the kernel to be called is obtained using \texttt{eclGetKernel()}. This handler 
+is used to pass the parameters to the kernel (\texttt{eclSetKernelArg()} for values and 
+\texttt{eclSetKernelArgPtr()} for pointers returned by \texttt{eclMalloc} and 
+\texttt{eclGlobalMalloc}), and set the call the kernel (\texttt{eclCallNDRange()}).
+
+When using a compiler that supports the C++0x standard, a parameter passing and kernel calls can be 
+done in a single line of code, as shown in Listing~\ref{lst:hpe:0x}.
+\lstinputlisting[float,
+    language=C++,
+    frame=tb,
+    caption={GMAC\slash HPE code to call the vector addition kernel using C++0x.},
+    label={lst:hpe:0x}]{hpe/0x.cpp}
+
+
+\subsection{Final Details}
+After calling the vector addition kernel, the application writes the output vector to a file, and 
+releases the allocated memory using \texttt{eclFree()}, as shown in Listing~\ref{lst:hpe:release}, 
+or \texttt{ecl::free()} when using C++.
+
+\lstinputlisting[float,
+    language=C,
+    frame=tb,
+    caption={GMAC\slash HPE code to write the output vector and release memory.},
+    label={lst:hpe:release}]{hpe/release.c}
+
+
+
+% vim: set spell ft=tex fo=aw2t expandtab sw=2 tw=100:

@@ -1,0 +1,53 @@
+#!/bin/bash -e
+#
+# Extract parameters to dia from file name
+# <base_filename>@<param>[+<param>...] where params is:
+# - layer:<layer>[,<layer>...]
+#     To export specific layers
+
+ARGS=
+while [ $# -gt 2 ]; do
+  if [ "$1" = "-t" -a "$2" = "pdf" ]; then
+    PS2PDF=y
+    ARGS="$ARGS -t eps"
+    shift
+  else
+    ARGS="$ARGS $1"
+  fi
+  shift
+done
+
+SOURCE=$1
+TARGET=$2
+if [ "$PS2PDF" = "y" ]; then
+  PS2PDF=$TARGET
+  TARGET=${TARGET%.pdf}.eps
+fi
+params=${TARGET#*@}
+if [ "$params" = "$TARGET" ]; then
+  params=""
+else
+  params=${params%.*}
+  params=${params//+/ }
+fi
+
+for param in $params; do
+  arg=${param#*:}
+  param=${param%%:*}
+  case $param in
+    layer)
+    ARGS="$ARGS -L $arg"
+    ;;
+    *)
+    echo "Unknown parameter: $param" >&2
+    exit 1
+    ;;
+  esac
+done
+
+dia $ARGS "$SOURCE" -e "$TARGET"
+
+if [ -n "$PS2PDF" ]; then
+  epstopdf $TARGET > $PS2PDF
+  rm -f $TARGET
+fi

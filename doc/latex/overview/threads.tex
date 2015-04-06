@@ -1,0 +1,59 @@
+\section{The GMAC CPU Threading Model}
+
+GMAC offers two different flavors for integrating GPUs in the application execution. The first 
+model, \emph{HPE}, is a high\hyp{}level CPU threading model that hides most of the complexities of 
+handling with GPUs in both single\hyp{}threaded and multi\hyp{}threaded applications running on top 
+of single\hyp{}GPU and multi\hyp{}GPU systems. The second model, \emph{Lite}, is an OpenCL\hyp{}like 
+interface which fully exposes the OpenCL run\hyp{}time system to application programmers.
+
+\subsection{HPE: Heterogeneous Parallel Execution}
+
+\begin{wrapfigure}{r}{0.4\linewidth}
+\vspace{-20pt}
+\includegraphics[width=\linewidth]{overview/figures/hpe}
+\vspace{-20pt}
+\caption{HPE CPU Threading model.}
+\label{fig:overview:hpe}
+\vspace{-20pt}
+\end{wrapfigure}
+
+GMAC\slash HPE is a high\hyp{}level model that hides most of the complexity of interacting with GPUs 
+in the CPU code. Figure~\ref{fig:overview:hpe} summarizes the HPE model; each CPU thread is bound to 
+a virtual GPU, which is the only GPU each CPU thread can interact with. Specifically, each CPU 
+thread can request the following actions to its virtual GPU:
+\begin{itemize}
+\item \textbf{Memory Allocation \slash Release.} Each CPU thread can allocate GPU memory which will 
+be accessible by CPU code of any other CPU thread, and by the kernels executed by the CPU thread 
+requesting the memory allocation.
+\item \textbf{Kernel calls.} Each CPU thread can execute kernels in its virtual GPU, which can 
+access to any GPU memory allocated by the calling CPU thread.
+\end{itemize}
+
+
+All GPU operations in HPE are synchronous function calls; whenever a GPU operation is requested, the 
+CPU code will not continue executing until the GPU operation is done. In HPE, GPU kernel calls and 
+function calls are analogous and interchangeable, and present the following properties:
+\begin{itemize}
+\item The code after a kernel call is guaranteed to not be executed until the kernel has finished 
+executing.
+\item Any modification within the kernel code to parameters passed by\hyp{}value has no visibility 
+outside the scope of the kernel.
+\item Any modification within the kernel code to parameters passed by\hyp{}reference has visibility 
+outside the scope of the kernel.
+\end{itemize}
+
+
+\subsection{Lite}
+
+GMAC\slash Lite is an OpenCL\hyp{}like interface to GMAC, which implements exactly the same CPU 
+threading model than OpenCL\@. In Lite, CPU threads create OpenCL contexts and command queues as in 
+any other OpenCL application, but there are new API calls to \textbf{allocate and release memory in 
+a OpenCL context}. Any CPU thread can allocate memory which is accessible from any CPU thread and 
+from kernels executed in the OpenCL context where the is allocated. A key difference between this 
+GMAC call and standard OpenCL allocation calls using the \texttt{CL\_MEM\_USE\_HOST\_PTR} or 
+\texttt{CL\_MEM\_ALLOC\_HOST\_PTR} is that memory allocated with GMAC does not require being 
+mapped\slash unmapped to be accessible from the CPU and\slash or from the GPU\@. Another major 
+difference between GMAC and OpenCL memory allocation calls is that Lite can be only used from OpenCL 
+contexts that contains a single device.
+
+% vim: set spell ft=tex fo=aw2t expandtab sw=2 tw=100:

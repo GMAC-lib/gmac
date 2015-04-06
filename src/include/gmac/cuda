@@ -1,0 +1,294 @@
+/* Copyright (c) 2009 University of Illinois
+                   Universitat Politecnica de Catalunya
+                   All rights reserved.
+
+Developed by: IMPACT Research Group / Grup de Sistemes Operatius
+              University of Illinois / Universitat Politecnica de Catalunya
+              http://impact.crhc.illinois.edu/
+              http://gso.ac.upc.edu/
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to
+deal with the Software without restriction, including without limitation the
+rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+sell copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+  1. Redistributions of source code must retain the above copyright notice,
+     this list of conditions and the following disclaimers.
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimers in the
+     documentation and/or other materials provided with the distribution.
+  3. Neither the names of IMPACT Research Group, Grup de Sistemes Operatius,
+     University of Illinois, Universitat Politecnica de Catalunya, nor the
+     names of its contributors may be used to endorse or promote products
+     derived from this Software without specific prior written permission.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+WITH THE SOFTWARE.  */
+
+#ifndef GMAC_CUDA_CPP_H_
+#define GMAC_CUDA_CPP_H_
+
+#ifndef __cplusplus
+#error "This header can only be included in C++ programs"
+#endif
+
+#include "cuda.h"
+
+namespace gmac {
+/**
+ * Returns the number of available accelerators.
+ * \return The number of available accelerators
+ */
+static inline unsigned
+getNumberOfAccelerators()
+{
+    return ::gmacGetNumberOfAccelerators();
+}
+
+/**
+ * Returns the ID of the accelerator the current thread is running on
+ * \return The number of available accelerators
+ */
+static inline unsigned
+getCurrentAcceleratorId()
+{
+    return ::gmacGetCurrentAcceleratorId();
+}
+
+/**
+ * Returns the amount of memory available in the given accelerator
+ *
+ * \param acc The identifier of the accelerator to query
+ * \param freeMem A pointer to the variable to store the amount of free memory
+ *
+ * \return gmacSuccess on success, an error code otherwise
+ */
+static inline gmacError_t
+getFreeMemory(unsigned acc, size_t *freeMem)
+{
+    return ::gmacGetFreeMemory(acc, freeMem);
+}
+
+/**
+ * Migrates the GPU execution mode of a thread to a concrete accelerator.
+ * Valid values are 0 * ... gmacNumberOfAccelerators() - 1.
+ * Currently only works if this is the first gmac call in the thread.
+ *
+ * \param acc index of the preferred accelerator
+ * \return On success gmacMigrate returns gmacSuccess. Otherwise it returns the
+ * causing error
+ */
+static inline gmacError_t
+migrate(unsigned acc)
+{
+    return ::gmacMigrate(acc);
+}
+/**
+ * Maps a range of CPU memory on the GPU. The memory pointed by cpuPtr must NOT have been allocated
+ * using gmacMalloc or gmacGlobalMalloc, and must not have been mapped before. Both, GPU and CPU,
+ * use the same addresses for this memory.
+ * \param cpuPtr CPU memory address to be mapped on the GPU
+ * \param count Number of bytes to be allocated
+ * \param prot The protection to be used in the mapping (currently unused)
+ * \return On success gmacMap returns gmacSuccess. Otherwise it returns the
+ * causing error
+ */
+static inline gmacError_t
+memoryMap(void *cpuPtr, size_t count, GmacProtection prot)
+{
+    return ::gmacMemoryMap(cpuPtr, count, prot);
+}
+
+/**
+ * Unmaps a range of CPU memory from the GPU. Both, GPU and CPU,
+ * use the same addresses for this memory.
+ * \param cpuPtr memory address to be unmapped from the GPU.
+ * \param count  bytes to be allocated
+ * \return On success gmacUnmmap returns gmacSuccess. Otherwise it returns the
+ * causing error
+ */
+static inline gmacError_t
+memoryUnmap(void *cpuPtr, size_t count)
+{
+    return ::gmacMemoryUnmap(cpuPtr, count);
+}
+
+/**
+ * Allocates a range of memory in the GPU and the CPU. Both, GPU and CPU,
+ * use the same addresses for this memory.
+ * \param devPtr memory address to store the address for the allocated memory
+ * \param count  bytes to be allocated
+ * \return On success gmacMalloc returns gmacSuccess and stores the address of the allocated
+ * memory in devPtr. Otherwise it returns the causing error
+ */
+static inline gmacError_t
+malloc(void **devPtr, size_t count)
+{
+    return ::gmacMalloc(devPtr, count);
+}
+
+/**
+ * Allocates a range of memory in all the GPUs and the CPU. Both, GPU and CPU,
+ * use the same addresses for this memory.
+ * \param devPtr memory address to store the address for the allocated memory
+ * \param count  bytes to be allocated
+ * \param hint Type of memory (distributed or hostmapped) to be allocated
+ * \return On success gmacGlobalMalloc returns gmacSuccess and stores the address
+ * of the allocated memory in devPtr. Otherwise it returns the causing error
+ */
+
+static inline gmacError_t
+globalMalloc(void **devPtr, size_t count, GmacGlobalMallocType hint = GMAC_GLOBAL_MALLOC_CENTRALIZED)
+{
+    return ::gmacGlobalMalloc(devPtr, count, hint);
+}
+
+/**
+ * Gets a the GPU address of an allocation performed with gmacMalloc or
+ * gmacGlobalMalloc
+ * \param cpuPtr memory address at the CPU
+ * \return On success gmacPtr returns the GPU address of the allocation pointed
+ * by CPU cpuPtr. Otherwise it returns NULL
+ */
+template <typename T>
+static inline T *
+ptr(const T *cpuPtr)
+{
+    return ::gmacPtr(cpuPtr);
+}
+
+/**
+ * Free the memory pointed by cpuPtr. The memory must have been allocated using
+ * with gmacMalloc() or gmacGlobalMalloc()
+ * \param cpuPtr Memory address to free. This address must have been returned
+ * by a previous call to gmacMalloc() or gmacGlobalMalloc()
+ * \return On success gmacFree returns gmacSuccess. Otherwise it returns the
+ * causing error
+ */
+static inline gmacError_t
+free(void *cpuPtr)
+{
+    return ::gmacFree(cpuPtr);
+}
+
+/**
+ * Waits until all previous GPU requests have finished
+ * \return On success gmacThreadSynchronize returns gmacSuccess. Otherwise it returns
+ * the causing error
+ */
+static inline gmacError_t
+threadSynchronize()
+{
+    return ::gmacThreadSynchronize();
+}
+
+/**
+ * Returns the error code of the last gmac operation performed by the calling thread
+ * \return The error code of the last gmac operation performed by the calling thread
+ */
+static inline gmacError_t
+getLastError()
+{
+    return ::gmacGetLastError();
+}
+
+/**
+ * Sets count bytes to c in the memory pointed by ptr
+ *
+ * \param ptr A pointer to the memory to be set
+ * \param c Value to be set
+ * \param count Number of bytes to be set
+ *
+ * \return A pointer to ptr
+ */
+static inline void *
+memset(void *ptr, int c, size_t count)
+{
+    return ::gmacMemset(ptr, c, count);
+}
+
+/**
+ * Copies count bytes from the memory pointed by src to the memory pointed by dst
+ *
+ * \param dst Pointer to destination memory
+ * \param src Pointer to source memory
+ * \param count Number of bytes to be copied
+ *
+ * \return A pointer to dst
+ */
+static inline void *
+memcpy(void *dst, const void *src, size_t count)
+{
+    return ::gmacMemcpy(dst, src, count);
+}
+
+/**
+ * Sends the execution mode of the current thread to the thread identified by tid
+ *
+ * \param tid The identifier of the destination thread
+ */
+static inline void
+send(THREAD_T tid)
+{
+    ::gmacSend(tid);
+}
+
+/**
+ * The current thread receives the execution mode that is sent by another thread using
+ * gmacSend or gmacSendReceive
+ */
+static inline void
+receive()
+{
+    ::gmacReceive();
+}
+
+/**
+ * Sends the execution mode of the current thread to the thread identified by tid
+ * receives the execution mode that is sent by another thread using gmacSend/gmacSendReceive
+ *
+ * \param tid The identifier of the destination thread
+ */
+static inline void
+sendReceive(THREAD_T tid)
+{
+    ::gmacSendReceive(tid);
+}
+
+/**
+ * Copies the execution mode of the current thread to the thread identified by tid
+ */
+static inline void
+copy(THREAD_T tid)
+{
+    ::gmacCopy(tid);
+}
+
+} // namespace gmac
+
+#include <gmac/new>
+
+// nvcc does not support TR1 headers yet
+#if 0
+#include <tr1/memory>
+#endif
+
+namespace gmac {
+    static ::__gmac_allocator allocator;
+
+    // nvcc does not support TR1 headers yet
+#if 0
+    #include <gmac/shared_ptr>
+#endif
+    #include <gmac/static>
+}
+
+#endif /* GMAC_CUDA_CPP_H */
+
+/* vim:set ft=cpp backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

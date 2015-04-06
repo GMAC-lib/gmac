@@ -1,0 +1,12 @@
+if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    message(STATUS "Compiling for Windows")
+    set(OS_DIR "windows")
+    set(gmac_static_FLAGS " ")
+    add_definitions(-DWINDOWS)
+
+    # Add Windows-only required libraries
+    find_library(psapi_LIB
+                 ${CMAKE_IMPORT_LIBRARY_PREFIX}psapi${CMAKE_IMPORT_LIBRARY_SUFFIX}) 
+    message(STATUS "psapi Library: ${psapi_LIB}")
+    set(gmac_LIBS ${gmac_LIBS} ${psapi_LIB})
+endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")

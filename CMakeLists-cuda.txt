@@ -1,0 +1,31 @@
+option(USE_CUDA "Enable CUDA backend" ON)
+if(USE_CUDA)
+    set(CUDA_PATH "/usr/local/cuda" CACHE PATH "CUDA directory")
+    set(CUDA_TOOLKIT_ROOT_DIR "${CUDA_PATH}")
+    include(FindCUDA)
+    # Default compilation for CUDA
+    find_path(NVCC nvcc${CMAKE_EXECUTABLE_SUFFIX}
+              HINTS "${CUDA_PATH}/bin" ENV "CUDA_BIN_PATH")
+    if(CUDA_FOUND)
+        add_definitions(-DUSE_CUDA)
+        set(API_DIR "cuda")
+        include_directories(${CUDA_INCLUDE_DIRS})
+        set(gmac_LIBS ${gmac_LIBS} ${CMAKE_IMPORT_LIBRARY_PREFIX}cuda${CMAKE_IMPORT_LIBRARY_SUFFIX})
+        if(CUDA_VERSION_MAJOR LESS "4")
+            message(STATUS "Using floating CUDA contexts")
+        else(CUDA_VERSION_MAJOR LESS "4")
+            message(STATUS "Using cuCtxSetCurrent")
+            add_definitions(-DUSE_CUDA_SET_CONTEXT)
+        endif(CUDA_VERSION_MAJOR LESS "4")
+    else(CUDA_FOUND)
+        message(FATAL_ERROR "NVIDIA CUDA Compiler is required")
+    endif(CUDA_FOUND)
+
+    set(GMAC_BLOCK_SIZE "512 * 1024")
+
+    set(GMAC_HEADERS ${GMAC_HEADERS} 
+                     ${CMAKE_SOURCE_DIR}/src/include/gmac/cuda
+                     ${CMAKE_SOURCE_DIR}/src/include/gmac/cuda.h
+                     ${CMAKE_SOURCE_DIR}/src/include/gmac/cuda_types.h)
+    set(GMAC_TARGET_NAME "${GMAC_TARGET_NAME}-cuda")
+endif(USE_CUDA)

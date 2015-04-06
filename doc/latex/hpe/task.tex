@@ -1,0 +1,96 @@
+\section{Task Decomposition}
+Task decomposition is an implementation technique where applications are divided in units of work 
+(\ie tasks), which might have inter\hyp{}dependencies among them (\ie the output of a task is the 
+input for another task). If none of the inputs of one task depends on the outputs of another task, 
+these two tasks are independent and, therefore, can be executed in parallel. Hence, task 
+decomposition is an implementation technique that provides an amenable way of exploiting parallel 
+execution.
+
+Software pipelining is a very common usage pattern of task decomposition in those applications where 
+one or several tasks can independently process blocks of their input data. A quite popular example 
+are video processing applications, where image frames can be processed one after the other.
+
+\begin{figure}
+\centering
+\includegraphics[width=0.75\linewidth]{hpe/figures/task}
+\caption{Task decomposition for the vector addition example.}
+\label{fig:hpe:task}
+\end{figure}
+
+Figure~\ref{fig:hpe:task} shows a potential task decomposition for our vector addition example. The 
+application is divided in three tasks: \emph{file read}, \emph{vector addition}, and \emph{file 
+write}. In order to obtain performance improvements, the input vectors are divided in several 
+blocks, being each input data block processed independently. Moreover, the \emph{file read} task is 
+duplicated so each task will read one of the input vectors.
+
+The most common practice to implement task\hyp{}based applications is to encapsulate each data 
+structure and two semaphores in a single type, as illustrated in Listing~\ref{lst:hpe:structure} for 
+the task\hyp{}based implementation of the vector addition example. The \texttt{ready} semaphore 
+signals dependent tasks that the data structure is ready to be consumed. Each task executes as many 
+\emph{post} operations over the \texttt{ready} semaphore as dependent tasks take the data structure 
+as input. The \texttt{reuse} semaphore is only required if data structures are reused during the 
+application execution, which is a common technique to avoid the overheads of memory allocation.  
+Producer tasks perform as many \emph{wait} operations of the \texttt{reuse} semaphore as dependent 
+tasks take the data structure as input parameter. Task consuming data structures perform a 
+\emph{wait} operation over the \texttt{ready} semaphore before using each data structure, and a 
+\emph{post} operation over the \texttt{reuse} semaphore when data structures are not longer used.
+
+\lstinputlisting[float,
+    language=C,
+    frame=tb,
+    caption={Data type used to encapsulate data structures in the task\hyp{}based vector addition 
+    example.},
+    label={lst:hpe:structure}]{hpe/structure.h}
+
+The most simple implementation of task\hyp{}based application consists of a CPU control thread and 
+as many worker CPU threads as task de application is decomposed to. Listing~\ref{lst:hpe:init} shows 
+the initialization code for the CPU control thread in our vector addition example. The CPU control 
+thread allocates the data structures used by the applications, initializing the \texttt{ready} and 
+\texttt{reuse} semaphores for each of them to zero. Data structures in this application are 
+allocated twice to allow double\hyp{}buffering of input and output task data structures and, thus, 
+enabling parallel execution of tasks.
+
+\lstinputlisting[float,
+    language=C,
+    frame=tb,
+    caption={CPU control thread code to initialize data structures for a task\hyp{}based 
+    implementation of vector addition using GMAC\slash HPE.},
+    label={lst:hpe:init}]{hpe/init.c}
+
+Then, the control CPU thread spawns one CPU thread for each task, and then waits for all of them to 
+complete. Listing~\ref{lst:hpe:task} shows the source code for the control thread in the vector 
+addition example, which follows the aforementioned structure. This code is exactly the very same 
+code a task\hyp{}base application would implement if GMAC\slash HPE were not used.
+\lstinputlisting[float,
+    language=C,
+    frame=tb,
+    caption={CPU control thread in a task\hyp{}based implementation of vector addition.},
+    label={lst:hpe:task}]{hpe/task.c}
+
+Finally, the control code waits for each of the spawned threads to finish, and releases the data 
+structures being used.
+
+The code for worker threads implementing each task, consists of a loop where different blocks of the 
+input and output vectors are processed. This code implements the synchronization mechanism 
+previously discussed using \emph{post} and \emph{wait} operations over the semaphores of the data 
+structures they take as input and output.
+
+%A final consideration is the case where a tasks execute kernels that take as input parameters data 
+%structures produced by other tasks. The GMAC memory model only allows kernels to access data 
+%structures allocated by the CPU thread performing the allocation. Hence, all these tasks should be 
+%executed by the same CPU thread. To overcome this difficulty, the application might use the
+%\texttt{ecl\-Device\-Copy()} and \texttt{ecl\-Device\-Receive()} GMAC calls. The former makes a 
+%copy of the virtual GPU associated to the calling CPU thread and sends it to a destination CPU 
+%thread.  The latter discards the virtual GPU associated to the calling thread, and waits for 
+%another thread to send a virtual GPU\@. The combination of these two GMAC calls provides a simple 
+%mechanism for several CPU threads to shared the same virtual GPU.
+
+%Two additional GMAC calls related to virtual GPU management are \texttt{ecl\-Device\-Send()} and 
+%\texttt{ecl\-Device\-Send\-Receive()}. The former sends the virtual GPU associated to the calling 
+%thread to a destination thread, and, thus, the caller cannot uses its virtual GPU any more. If a 
+%new GMAC call is performed by the caller, a new virtual GPU will be created and associated to that 
+%CPU thread. The latter, \texttt{ecl\-Device\-Send\-Receive()} allows the caller CPU thread to sends 
+%its virtual GPU to a destination CPU thread, and waits for another CPU thread to send or copy its 
+%virtual GPU to the caller. 
+
+% vim: set spell ft=tex fo=aw2t expandtab sw=2 tw=100:

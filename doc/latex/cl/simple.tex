@@ -1,0 +1,78 @@
+\section{Single\hyp{}Threaded Applications}
+
+\subsection{Initialization}
+GMAC\slash CL requires data allocations to be performed over single\hyp{}device OpenCL contexts.  
+This simple restriction allows the initialization of GMAC\slash CL applications to be greatly 
+simplified compared to regular OpenCL applications (Listing~\ref{lst:opencl:init}). GMAC\slash CL 
+offers a convenient API call (\texttt{clInitHelpers()}). This API call can be also combined with 
+\texttt{clHelperLoadProgramFromFile()} to further simplify the load and compilation of OpenCL 
+kernels from external files. The combination of these both GMAC\slash CL API calls can be combined 
+as illustrated in Listing~\ref{lst:cl:load}.
+
+\lstinputlisting[float,
+    language=C,
+    frame=tb,
+    caption={GMAC\slash CL code to make OpenCL code available to the application.},
+    label={lst:cl:load}]{cl/load.c}
+
+The \texttt{clInitHelpers()} takes a reference to a \texttt{size\_t} variable where the number of 
+available platforms in the system. A call to \texttt{clGetHelpers} will return an array of helpers 
+(one per platform in the system). A helper is a structure that contains the identifier of the 
+platform, an array of devices (\texttt{devices}), the number of devices (\texttt{num\_devices}), an 
+array of contexts (\texttt{contexts}), which are bound to each of the devices in the system, and an 
+array of command queues (\texttt{command\_queues}), which are bound to each of the contexts.  
+GMAC\slash CL applications are not required to use the \texttt{cl\_helper} structure and the 
+\texttt{clInitHelpers()} function, but its usage reduces amount of application initialization code.
+
+\subsection{Memory Allocation}
+Memory allocation in GMAC\slash CL is done using the \texttt{clMalloc()} API call, which returns a 
+CPU pointer that can be used in any place of the CPU code. Listing~\ref{lst:cl:load} shows the 
+GMAC\slash CL code to allocate data structures using \texttt{clMalloc()}. In this example we use 
+the same \texttt{load\_vector()} function used in Listing~\ref{lst:hpe:load}.
+
+\lstinputlisting[float,
+    language=C,
+    frame=tb,
+    caption={GMAC\slash CL code to allocate and initialized the input and output vectors.},
+    label={lst:cl:alloc}]{cl/alloc.c}
+
+Calls to \texttt{clMalloc()} take as first parameter an OpenCL command queue.  
+Listing~\ref{lst:cl:alloc} uses one of the contexts created by the call to \texttt{clInitHelpers()}, 
+but any valid OpenCL context might be used. Besides the OpenCL command queue, \texttt{clMalloc()} 
+also takes a reference to the pointer where to store the address of the allocated memory, and the 
+number of bytes of memory to be allocated.
+
+\subsection{Kernel Calls}
+Kernel calls in GMAC\slash CL is very similar to both GMAC\slash HPE and OpenCL\@.  
+Listing~\ref{lst:cl:call} shows the code to perform the kernel call, which uses 
+\texttt{clBuffer()} to get the \texttt{cl\_mem} object associated to memory allocated through calls 
+to \texttt{clMalloc()}.
+
+\lstinputlisting[float,
+    language=C,
+    frame=tb,
+    caption={GMAC\slash CL code to call the vector addition kernel.},
+    label={lst:cl:call}]{cl/call.c}
+
+Calls to \texttt{clBuffer()} takes as first parameter the context which the memory belongs to, and 
+as a second parameter, a CPU pointer returned by \texttt{clMalloc()}.  If an invalid pointer is 
+passed as a parameter, \texttt{clBuffer()} returns a \texttt{cl\_mem} object initialized to 
+\texttt{NULL} to signal the error condition.
+
+\subsection{Memory Release}
+Listing~\ref{lst:cl:release} shows the source code to release resources in GMAC\slash CL\@. Memory 
+is released calling \texttt{clFree()}, while all data structures associated with OpenCL are released 
+calling to \texttt{clReleaseHelpers()}.
+
+\lstinputlisting[float,
+    language=C,
+    frame=tb,
+    caption={GMAC\slash CL code to write the output vector and release memory.},
+    label={lst:cl:release}]{cl/release.c}
+
+Calls to \texttt{clFree()} require the OpenCL command queue where the memory was allocated 
+(\texttt{cl.command\_queues[0]} in Listing~\ref{lst:cl:release}), and the CPU address returned by 
+\texttt{clMalloc()}. If an OpenCL context other than the one where the memory was allocated is 
+passed as a parameter to \texttt{clFree()}, an \texttt{CL\_INVALID\_CONTEXT} error is returned.
+
+% vim: set spell ft=tex fo=aw2t expandtab sw=2 tw=100:

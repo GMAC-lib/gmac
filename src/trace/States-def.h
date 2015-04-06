@@ -1,0 +1,5 @@
+STATE(Idle)
+STATE(Running)
+STATE(Init)
+STATE(Wait)
+STATE(IO)

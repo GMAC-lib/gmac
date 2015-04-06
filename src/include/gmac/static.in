@@ -1,0 +1,371 @@
+/* Copyright (c) 2011 University of Illinois
+                   Universitat Politecnica de Catalunya
+                   All rights reserved.
+
+Developed by: IMPACT Research Group / Grup de Sistemes Operatius
+              University of Illinois / Universitat Politecnica de Catalunya
+              http://impact.crhc.illinois.edu/
+              http://gso.ac.upc.edu/
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to
+deal with the Software without restriction, including without limitation the
+rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+sell copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+  1. Redistributions of source code must retain the above copyright notice,
+     this list of conditions and the following disclaimers.
+  2. Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimers in the
+     documentation and/or other materials provided with the distribution.
+  3. Neither the names of IMPACT Research Group, Grup de Sistemes Operatius,
+     University of Illinois, Universitat Politecnica de Catalunya, nor the
+     names of its contributors may be used to endorse or promote products
+     derived from this Software without specific prior written permission.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+WITH THE SOFTWARE.  */
+
+/**
+ * \file gmac/static
+ *
+ * GMAC C++ static objects implementation
+ */
+
+#ifndef GMAC_STATIC_CPP_H_
+#define GMAC_STATIC_CPP_H_
+
+#ifndef __cplusplus
+#error "This header can only be included in C++ programs"
+#endif
+
+template <typename T>
+class static_var {
+protected:
+    T *t_;
+
+public:
+    static_var()
+    {
+        t_ = new (allocator) T;
+    }
+
+    static_var(T &t)
+    {
+        t_ = new (allocator) T;
+        *t_ = t;
+    }
+
+    ~static_var()
+    {
+        free(t_);
+    }
+
+    T *operator&()
+    {
+        return t_;
+    }
+
+    const T *operator&() const
+    {
+        return t_;
+    }
+
+    T *data()
+    {
+        return t_;
+    }
+
+    const T *data() const
+    {
+        return t_;
+    }
+};
+
+template <typename T>
+class array :
+    public static_var<T> {
+    const unsigned size_;
+
+public:
+    typedef T value_type;
+
+    array(unsigned size) :
+        size_(size)
+    {
+        this->t_ = new (allocator) T[size];
+    }
+
+    virtual ~array()
+    {
+    }
+
+    T &operator[](unsigned index)
+    {
+        return this->t_[index];
+    }
+
+    const T &operator[](unsigned index) const
+    {
+        return this->t_[index];
+    }
+
+    unsigned size() const
+    {
+        return size_;
+    }
+};
+
+template <typename T, unsigned N>
+class static_array :
+    public static_var<T> {
+
+public:
+    typedef T value_type;
+
+    static_array()
+    {
+        this->t_ = new (allocator) T[N];
+    }
+
+    virtual ~static_array()
+    {
+    }
+
+    T &operator[](unsigned index)
+    {
+        return this->t_[index];
+    }
+
+    const T &operator[](unsigned index) const
+    {
+        return this->t_[index];
+    }
+
+    unsigned size() const
+    {
+        return N;
+    }
+};
+
+#if USE_BOOST_HEADER == 1
+
+template <typename T>
+class ArrayAllocator {
+public:
+    typedef T value_type;
+    typedef T *pointer;
+    typedef T &reference;
+    typedef const T *const_pointer;
+    typedef const T &const_reference;
+    typedef size_t size_type;
+    typedef ptrdiff_t difference_type;
+
+    inline
+    pointer address(reference x) const
+    {
+        return &x;
+    }
+
+    inline
+    const_pointer address(const_reference x) const
+    {
+        return &x;
+    }
+
+    inline
+    pointer allocate(size_type n, ArrayAllocator::const_pointer hint = 0)
+    {
+        return new (allocator) T[n];
+    }
+
+    void deallocate(pointer p, size_type n)
+    {
+        free(p);
+    }
+
+    size_type max_size() const throw()
+    {
+        size_t freeMem;
+        error err = getFreeMemory(getCurrentAcceleratorId(), &freeMem);
+
+        return freeMem / sizeof(T);
+    }
+
+    // TODO: check if this is correct
+    void construct(pointer p, const_reference val)
+    {
+        new ((void*)p) T (val);
+    }
+
+    void destroy(pointer p)
+    {
+        ((T*)p)->~T();
+    }
+};
+
+template <typename T, std::size_t DIMS>
+class multi_array_ref {
+public:
+    typedef T element;
+
+    typedef boost::multi_array_ref<T, DIMS> Parent;
+    typedef boost::general_storage_order<DIMS> storage_order_type;
+    typedef boost::multi_array_types::extent_range extents_tuple;
+
+    template <typename ExtentList>
+    explicit multi_array_ref(element *data, const ExtentList& sizes,
+                             const storage_order_type& store = boost::c_storage_order()) :
+        Parent(data, sizes, store)
+    {
+    }
+
+    explicit multi_array_ref(element* data, const extents_tuple& ranges,
+                             const storage_order_type& store = boost::c_storage_order()) :
+        Parent(data, ranges, store)
+    {
+    }
+
+    multi_array_ref(const multi_array_ref &x) :
+        Parent(x)
+    {
+    }
+
+    virtual ~multi_array_ref()
+    {
+    }
+
+    multi_array_ref &operator=(const multi_array_ref& x)
+    {
+        Parent::operator=(x);
+        return *this;
+    }
+
+    template <class Array>
+    multi_array_ref &operator=(const Array& x)
+    {
+        Parent::operator=(x);
+        return *this;
+    }
+};
+
+template <typename T, std::size_t DIMS, typename TPtr = const T*>
+class const_multi_array_ref {
+public:
+    typedef T element;
+
+    typedef boost::const_multi_array_ref<T, DIMS, TPtr> Parent;
+    typedef boost::general_storage_order<DIMS> storage_order_type;
+    typedef boost::multi_array_types::extent_range extents_tuple;
+
+    template <typename ExtentList>
+    explicit const_multi_array_ref(TPtr data, const ExtentList& sizes,
+                                   const storage_order_type& store = boost::c_storage_order()) :
+        Parent(data, sizes, store)
+    {
+    }
+
+    explicit const_multi_array_ref(TPtr data, const extents_tuple& ranges,
+                                   const storage_order_type& store = boost::c_storage_order()) :
+        Parent(data, ranges, store)
+    {
+    }
+
+    const_multi_array_ref(const const_multi_array_ref& x) :
+        Parent(x)
+    {
+    }
+
+    virtual ~const_multi_array_ref()
+    {
+    }
+};
+
+
+template <typename T, std::size_t DIMS, typename A = ArrayAllocator<T> >
+class multi_array :
+    public boost::multi_array<T, DIMS, A> {
+
+    typedef boost::multi_array<T, DIMS, A> Parent;
+    typedef boost::general_storage_order<DIMS> storage_order_type;
+    typedef boost::multi_array_types::extent_range extents_tuple;
+
+public:
+    template <typename ExtentList>
+    explicit multi_array(const ExtentList& sizes, const storage_order_type &store = boost::c_storage_order(), const A &alloc = ArrayAllocator<T>()) :
+        Parent(sizes, store, alloc)
+    {
+    }
+
+    explicit multi_array(const extents_tuple &ranges, const storage_order_type& store = boost::c_storage_order(), const A &alloc = ArrayAllocator<T>()) :
+        Parent(ranges, store, alloc)
+    {
+    }
+
+    multi_array(const multi_array &x) :
+        Parent(x)
+    {
+    }
+
+    multi_array(const const_multi_array_ref<T, DIMS> &x) :
+        Parent(x)
+    {
+    }
+
+    template <typename OPtr>
+    multi_array(const boost::detail::multi_array::const_sub_array<T, DIMS, OPtr> &x) :
+        Parent(x)
+    {
+    }
+
+    template <typename OPtr>
+    multi_array(const boost::detail::multi_array::const_multi_array_view<T, DIMS, OPtr> &x) :
+        Parent(x)
+    {
+    }
+
+    multi_array(const multi_array_ref<T,DIMS> &x) :
+        Parent(x)
+    {
+    }
+
+    multi_array(const boost::detail::multi_array::sub_array<T, DIMS> &x) :
+        Parent(x)
+    {
+    }
+
+    multi_array(const boost::detail::multi_array::multi_array_view<T, DIMS> &x) :
+        Parent(x)
+    {
+    }
+
+    multi_array &operator=(const multi_array& x)
+    {
+        Parent::operator=(x);
+        return *this;
+    }
+
+    template <class Array>
+    multi_array &operator=(const Array& x)
+    {
+        Parent::operator=(x);
+        return *this;
+    }
+
+    multi_array &resize(extents_tuple &extents)
+    {
+        Parent::resize(extents);
+        return *this;
+    }
+};
+
+#endif /* USE_BOOST_HEADER  == 1*/
+
+#endif /* GMAC_STATIC_CPP_H_ */
+
+/* vim:set ft=cpp backspace=2 tabstop=4 shiftwidth=4 textwidth=120 foldmethod=marker expandtab: */

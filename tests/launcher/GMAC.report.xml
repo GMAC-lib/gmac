@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="GMAC" tests="120" failures="1" errors="0">
+<testsuite name="gmacVecAdd" tests="20" failures="0" errors="0" >
+<testcase name="GMAC_BLOCK_SIZE=4096;GMAC_ROLL_SIZE=1;" status="run">
+</testcase>
+<testcase name="GMAC_BLOCK_SIZE=131072;GMAC_ROLL_SIZE=1;" status="run">
+</testcase>
+<testcase name="GMAC_BLOCK_SIZE=2097152;GMAC_ROLL_SIZE=1;" status="run">
+</testcase>
+<testcase name="GMAC_BLOCK_SIZE=8388608;GMAC_ROLL_SIZE=1;" status="run">
+</testcase>
+<testcase name="GMAC_BLOCK_SIZE=4096;GMAC_ROLL_SIZE=2;" status="run">
+</testcase>
+<testcase name="GMAC_BLOCK_SIZE=131072;GMAC_ROLL_SIZE=2;" status="run">
+</testcase>
+<testcase name="GMAC_BLOCK_SIZE=2097152;GMAC_ROLL_SIZE=2;" status="run">
+</testcase>
+<testcase name="GMAC_BLOCK_SIZE=8388608;GMAC_ROLL_SIZE=2;" status="run">
+</testcase>
+<testcase name="GMAC_BLOCK_SIZE=4096;GMAC_ROLL_SIZE=4;" status="run">
+</testcase>
+<testcase name="GMAC_BLOCK_SIZE=131072;GMAC_ROLL_SIZE=4;" status="run">
+</testcase>
+<testcase name="GMAC_BLOCK_SIZE=2097152;GMAC_ROLL_SIZE=4;" status="run">
+</testcase>
+<testcase name="GMAC_BLOCK_SIZE=8388608;GMAC_ROLL_SIZE=4;" status="run">
+</testcase>
+<testcase name="GMAC_BLOCK_SIZE=4096;GMAC_ROLL_SIZE=8;" status="run">
+</testcase>
+<testcase name="GMAC_BLOCK_SIZE=131072;GMAC_ROLL_SIZE=8;" status="run">
+</testcase>
+<testcase name="GMAC_BLOCK_SIZE=2097152;GMAC_ROLL_SIZE=8;" status="run">
+</testcase>
+<testcase name="GMAC_BLOCK_SIZE=8388608;GMAC_ROLL_SIZE=8;" status="run">
+</testcase>
+<testcase name="GMAC_BLOCK_SIZE=4096;GMAC_ROLL_SIZE=16;" status="run">
+</testcase>
+<testcase name="GMAC_BLOCK_SIZE=131072;GMAC_ROLL_SIZE=16;" status="run">
+</testcase>
+<testcase name="GMAC_BLOCK_SIZE=2097152;GMAC_ROLL_SIZE=16;" status="run">
+</testcase>
+<testcase name="GMAC_BLOCK_SIZE=8388608;GMAC_ROLL_SIZE=16;" status="run">
+</testcase>
+</testsuite>
+<testsuite name="gmacThreadVecAdd" tests="100" failures="1" errors="0" >
+<testcase name="GMAC_NITER=1;GMAC_BLOCK_SIZE=4096;GMAC_ROLL_SIZE=1;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=2;GMAC_BLOCK_SIZE=4096;GMAC_ROLL_SIZE=1;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=4;GMAC_BLOCK_SIZE=4096;GMAC_ROLL_SIZE=1;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=8;GMAC_BLOCK_SIZE=4096;GMAC_ROLL_SIZE=1;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=16;GMAC_BLOCK_SIZE=4096;GMAC_ROLL_SIZE=1;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=1;GMAC_BLOCK_SIZE=131072;GMAC_ROLL_SIZE=1;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=2;GMAC_BLOCK_SIZE=131072;GMAC_ROLL_SIZE=1;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=4;GMAC_BLOCK_SIZE=131072;GMAC_ROLL_SIZE=1;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=8;GMAC_BLOCK_SIZE=131072;GMAC_ROLL_SIZE=1;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=16;GMAC_BLOCK_SIZE=131072;GMAC_ROLL_SIZE=1;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=1;GMAC_BLOCK_SIZE=2097152;GMAC_ROLL_SIZE=1;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=2;GMAC_BLOCK_SIZE=2097152;GMAC_ROLL_SIZE=1;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=4;GMAC_BLOCK_SIZE=2097152;GMAC_ROLL_SIZE=1;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=8;GMAC_BLOCK_SIZE=2097152;GMAC_ROLL_SIZE=1;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=16;GMAC_BLOCK_SIZE=2097152;GMAC_ROLL_SIZE=1;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=1;GMAC_BLOCK_SIZE=8388608;GMAC_ROLL_SIZE=1;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=2;GMAC_BLOCK_SIZE=8388608;GMAC_ROLL_SIZE=1;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=4;GMAC_BLOCK_SIZE=8388608;GMAC_ROLL_SIZE=1;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=8;GMAC_BLOCK_SIZE=8388608;GMAC_ROLL_SIZE=1;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=16;GMAC_BLOCK_SIZE=8388608;GMAC_ROLL_SIZE=1;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=1;GMAC_BLOCK_SIZE=4096;GMAC_ROLL_SIZE=2;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=2;GMAC_BLOCK_SIZE=4096;GMAC_ROLL_SIZE=2;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=4;GMAC_BLOCK_SIZE=4096;GMAC_ROLL_SIZE=2;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=8;GMAC_BLOCK_SIZE=4096;GMAC_ROLL_SIZE=2;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=16;GMAC_BLOCK_SIZE=4096;GMAC_ROLL_SIZE=2;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=1;GMAC_BLOCK_SIZE=131072;GMAC_ROLL_SIZE=2;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=2;GMAC_BLOCK_SIZE=131072;GMAC_ROLL_SIZE=2;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=4;GMAC_BLOCK_SIZE=131072;GMAC_ROLL_SIZE=2;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=8;GMAC_BLOCK_SIZE=131072;GMAC_ROLL_SIZE=2;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=16;GMAC_BLOCK_SIZE=131072;GMAC_ROLL_SIZE=2;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=1;GMAC_BLOCK_SIZE=2097152;GMAC_ROLL_SIZE=2;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=2;GMAC_BLOCK_SIZE=2097152;GMAC_ROLL_SIZE=2;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=4;GMAC_BLOCK_SIZE=2097152;GMAC_ROLL_SIZE=2;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=8;GMAC_BLOCK_SIZE=2097152;GMAC_ROLL_SIZE=2;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=16;GMAC_BLOCK_SIZE=2097152;GMAC_ROLL_SIZE=2;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=1;GMAC_BLOCK_SIZE=8388608;GMAC_ROLL_SIZE=2;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=2;GMAC_BLOCK_SIZE=8388608;GMAC_ROLL_SIZE=2;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=4;GMAC_BLOCK_SIZE=8388608;GMAC_ROLL_SIZE=2;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=8;GMAC_BLOCK_SIZE=8388608;GMAC_ROLL_SIZE=2;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=16;GMAC_BLOCK_SIZE=8388608;GMAC_ROLL_SIZE=2;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=1;GMAC_BLOCK_SIZE=4096;GMAC_ROLL_SIZE=4;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=2;GMAC_BLOCK_SIZE=4096;GMAC_ROLL_SIZE=4;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=4;GMAC_BLOCK_SIZE=4096;GMAC_ROLL_SIZE=4;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=8;GMAC_BLOCK_SIZE=4096;GMAC_ROLL_SIZE=4;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=16;GMAC_BLOCK_SIZE=4096;GMAC_ROLL_SIZE=4;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=1;GMAC_BLOCK_SIZE=131072;GMAC_ROLL_SIZE=4;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=2;GMAC_BLOCK_SIZE=131072;GMAC_ROLL_SIZE=4;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=4;GMAC_BLOCK_SIZE=131072;GMAC_ROLL_SIZE=4;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=8;GMAC_BLOCK_SIZE=131072;GMAC_ROLL_SIZE=4;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=16;GMAC_BLOCK_SIZE=131072;GMAC_ROLL_SIZE=4;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=1;GMAC_BLOCK_SIZE=2097152;GMAC_ROLL_SIZE=4;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=2;GMAC_BLOCK_SIZE=2097152;GMAC_ROLL_SIZE=4;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=4;GMAC_BLOCK_SIZE=2097152;GMAC_ROLL_SIZE=4;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=8;GMAC_BLOCK_SIZE=2097152;GMAC_ROLL_SIZE=4;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=16;GMAC_BLOCK_SIZE=2097152;GMAC_ROLL_SIZE=4;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=1;GMAC_BLOCK_SIZE=8388608;GMAC_ROLL_SIZE=4;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=2;GMAC_BLOCK_SIZE=8388608;GMAC_ROLL_SIZE=4;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=4;GMAC_BLOCK_SIZE=8388608;GMAC_ROLL_SIZE=4;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=8;GMAC_BLOCK_SIZE=8388608;GMAC_ROLL_SIZE=4;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=16;GMAC_BLOCK_SIZE=8388608;GMAC_ROLL_SIZE=4;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=1;GMAC_BLOCK_SIZE=4096;GMAC_ROLL_SIZE=8;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=2;GMAC_BLOCK_SIZE=4096;GMAC_ROLL_SIZE=8;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=4;GMAC_BLOCK_SIZE=4096;GMAC_ROLL_SIZE=8;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=8;GMAC_BLOCK_SIZE=4096;GMAC_ROLL_SIZE=8;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=16;GMAC_BLOCK_SIZE=4096;GMAC_ROLL_SIZE=8;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=1;GMAC_BLOCK_SIZE=131072;GMAC_ROLL_SIZE=8;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=2;GMAC_BLOCK_SIZE=131072;GMAC_ROLL_SIZE=8;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=4;GMAC_BLOCK_SIZE=131072;GMAC_ROLL_SIZE=8;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=8;GMAC_BLOCK_SIZE=131072;GMAC_ROLL_SIZE=8;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=16;GMAC_BLOCK_SIZE=131072;GMAC_ROLL_SIZE=8;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=1;GMAC_BLOCK_SIZE=2097152;GMAC_ROLL_SIZE=8;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=2;GMAC_BLOCK_SIZE=2097152;GMAC_ROLL_SIZE=8;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=4;GMAC_BLOCK_SIZE=2097152;GMAC_ROLL_SIZE=8;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=8;GMAC_BLOCK_SIZE=2097152;GMAC_ROLL_SIZE=8;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=16;GMAC_BLOCK_SIZE=2097152;GMAC_ROLL_SIZE=8;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=1;GMAC_BLOCK_SIZE=8388608;GMAC_ROLL_SIZE=8;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=2;GMAC_BLOCK_SIZE=8388608;GMAC_ROLL_SIZE=8;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=4;GMAC_BLOCK_SIZE=8388608;GMAC_ROLL_SIZE=8;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=8;GMAC_BLOCK_SIZE=8388608;GMAC_ROLL_SIZE=8;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=16;GMAC_BLOCK_SIZE=8388608;GMAC_ROLL_SIZE=8;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=1;GMAC_BLOCK_SIZE=4096;GMAC_ROLL_SIZE=16;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=2;GMAC_BLOCK_SIZE=4096;GMAC_ROLL_SIZE=16;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=4;GMAC_BLOCK_SIZE=4096;GMAC_ROLL_SIZE=16;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=8;GMAC_BLOCK_SIZE=4096;GMAC_ROLL_SIZE=16;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=16;GMAC_BLOCK_SIZE=4096;GMAC_ROLL_SIZE=16;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=1;GMAC_BLOCK_SIZE=131072;GMAC_ROLL_SIZE=16;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=2;GMAC_BLOCK_SIZE=131072;GMAC_ROLL_SIZE=16;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=4;GMAC_BLOCK_SIZE=131072;GMAC_ROLL_SIZE=16;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=8;GMAC_BLOCK_SIZE=131072;GMAC_ROLL_SIZE=16;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=16;GMAC_BLOCK_SIZE=131072;GMAC_ROLL_SIZE=16;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=1;GMAC_BLOCK_SIZE=2097152;GMAC_ROLL_SIZE=16;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=2;GMAC_BLOCK_SIZE=2097152;GMAC_ROLL_SIZE=16;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=4;GMAC_BLOCK_SIZE=2097152;GMAC_ROLL_SIZE=16;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=8;GMAC_BLOCK_SIZE=2097152;GMAC_ROLL_SIZE=16;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=16;GMAC_BLOCK_SIZE=2097152;GMAC_ROLL_SIZE=16;" status="run">
+<failure message="Exit code: 6"/>
+</testcase>
+<testcase name="GMAC_NITER=1;GMAC_BLOCK_SIZE=8388608;GMAC_ROLL_SIZE=16;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=2;GMAC_BLOCK_SIZE=8388608;GMAC_ROLL_SIZE=16;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=4;GMAC_BLOCK_SIZE=8388608;GMAC_ROLL_SIZE=16;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=8;GMAC_BLOCK_SIZE=8388608;GMAC_ROLL_SIZE=16;" status="run">
+</testcase>
+<testcase name="GMAC_NITER=16;GMAC_BLOCK_SIZE=8388608;GMAC_ROLL_SIZE=16;" status="run">
+</testcase>
+</testsuite>
+</testsuites>

@@ -1,0 +1,35 @@
+\section{Comparison of HPE and Lite}
+The two API provided by GMAC, HPE and Lite, provide different benefits and limitations. HPE is a 
+high\hyp{}level interface that hides the complexity of managing OpenCL platforms, devices, contexts, 
+command queues, events, call\hyp{}backs, and memory buffers. This is in contrast with Lite, which is 
+an OpenCL extension to allow applications to use automatically coherent memory buffers.
+
+We recommend to use HPE in two different scenarios, when porting existing CPU applications to use 
+OpenCL kernels, and when developing new applications that use OpenCL kernels. Application porting is 
+highly simplified when using HPE because the existent source code do not have to be 
+re\hyp{}engineered to include OpenCL abstractions, such as platforms, devices, contexts, command 
+queues, events, call\hyp{}backs, and memory buffers. HPE only requires minor source code 
+refactoring:
+\begin{itemize}
+\item Allocate those data structures used by OpenCL kernels using the memory allocation calls 
+provided by GMAC\@.
+\item Modify function calls by kernel calls.
+\end{itemize}
+Analogously, applications that are implemented from scratch also benefit from HPE provides 
+well\hyp{}know synchronous function call\slash shared memory model, most programmers have been 
+successfully using for the last forty years. HPE allows programmers to design their applications 
+without the constraints imposed by OpenCL: decoupled execution (\ie platforms, devices, and 
+contexts), asynchronous tasks (\ie command queues, events, and asynchronous invocations), and 
+distributed memory (\ie memory buffers). Moreover, HPE provides a simple and elegant interface for 
+multi\hyp{}threaded and\slash or multi\hyp{}accelerator applications, which allows programmers to 
+use well\hyp{}know inter\hyp{}thread synchronization primitives (\ie mutexes, semaphores, barriers, 
+and monitors) to orchestrate the concurrent execution of their applications.
+
+The Lite OpenCL extension is designed to bring the performance and portability benefits of GMAC to 
+applications already coded using OpenCL\@. These applications are easily ported to GMAC by 
+refactoring the existent code to use the allocation calls provided by Lite and removing the code in 
+charge of data transfers. However, Lite can only be used in applications where each OpenCL context 
+is bound to a single OpenCL device.
+
+
+% vim: set spell ft=tex fo=aw2t expandtab sw=2 tw=100:

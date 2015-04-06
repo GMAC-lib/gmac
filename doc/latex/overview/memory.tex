@@ -1,0 +1,42 @@
+\section{The GMAC Memory Model}
+
+The GMAC library builds an asymmetric distributed shared memory virtual space for systems formed by 
+general purpose CPUs and one or several GPUs. Figure~\ref{fig:overview:memory} outlines this shared 
+virtual memory model, where CPUs and GPUs access a common virtual address space. Specifically, each 
+GPU cannot only access those memory locations that are hosted by its own memory.
+
+\begin{figure}
+\centering
+\includegraphics[width=0.8\linewidth]{overview/figures/memory}
+\caption{Asymmetric Virtual Address Space in GMAC\@.}
+\label{fig:overview:memory}
+\end{figure}
+
+A major consequence, and advantage, of the GMAC memory model is the lack of memory copy calls (\eg 
+\texttt{clEnqueue\-Read\-Buffer()} \slash \texttt{clEnqueue\-Write\-Buffer()} in applications source 
+code.  By removing explicit data transfers in the application code, GMAC eases the task of 
+programming GPU systems. First, GMAC leverages programmers from the burden of tracking which 
+processor (\ie CPU or GPU) has modified data structures last time, and coding the necessary calls to 
+access data structures used by both CPUs and GPUs in a coherent way. Second, GMAC also avoids the 
+extra coding necessary to only perform data transfers on those systems where CPUs and GPUs share the 
+same physical memory such as in AMD Fusion APUs.
+
+Under the hood, GMAC dynamically detects memory read and write accesses to data structures shared 
+between CPUs and GPUs and asynchronously updates the contents the GPU while the CPU continues 
+executing the application code. This greedy data transfer mechanism provides performance benefits in 
+discrete GPU systems (\ie machines where CPUs and GPUs have separated physical memories) because few 
+or none data needs to be transferred from the CPU to the GPU when a kernel is called. Moreover, GMAC 
+tracks data changes using a small granularity, so only those portions of the data that have been 
+effectively modified are transfered. GMAC also avoids copying the data back from the GPU to the CPU 
+after kernel calls until first needed by the CPU, reducing the amount of data transferred. All these 
+asynchronous data copies are automatically triggered and managed by GMAC, without any intervention 
+from the programmer and, thus, effectively simplifying the CPU application code.
+
+GMAC also transparently detects application calls to I\slash O functions (\eg \texttt{fread()} 
+\slash \texttt{fwrite()}) and provides specialized implementations for these routines that 
+double\hyp{}buffer data transfers between I\slash O devices and GPU memory. Analogously, GMAC also 
+double\hyp{}buffers data transfers between GPUs. This extensive use of double\hyp{}buffering 
+techniques provides major performance benefits to applications without requiring programmers to 
+implement complex and repetitive code.
+
+% vim: set spell ft=tex fo=aw2t expandtab sw=2 tw=100:

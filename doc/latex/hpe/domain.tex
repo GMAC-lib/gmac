@@ -1,0 +1,47 @@
+\section{Domain Decomposition Across Multiple GPUs}
+Domain decomposition is a technique that splits a given computation across two or more GPUs. This 
+technique is typically used for two different purposes:
+\begin{itemize}
+\item To speed\hyp{}up kernel execution by exploiting the computational power of a higher number of 
+GPUs.
+\item To overcome GPU memory capacity limitations, by distributing input and output data structures 
+across several GPUs.
+\end{itemize}
+
+We illustrate how to implement domain decomposition in GMAC\slash HPE using the previous vector 
+addition example. In this example we will assume that the number of GPUs present in the system is 
+not known until execution\hyp{}time.
+
+Domain decomposition in GMAC\slash HPE is implemented using multiple CPU threads. This is in 
+contrast to OpenCL, which allows for a single\hyp{}threaded implementation. However, good software 
+engineering practices always recommend to use multi\hyp{}threaded domain decomposition to accomplish 
+modularity, debuggabilty, and maintainability. 
+
+\begin{figure}
+\centering
+\includegraphics[width=\linewidth]{hpe/figures/domain}
+\caption{Domain decomposition of a vector addition in GMAC\slash HPE\@.}
+\label{fig:hpe:domain}
+\end{figure}
+
+\lstinputlisting[float,
+    language=C,
+    frame=tb,
+    caption={GMAC\slash HPE code the control thread when using domain decomposition.},
+    label={lst:hpe:control}]{hpe/control.c}
+
+We will use the threading scheme in Figure~\ref{fig:hpe:domain}, where the main CPU thread acts as a 
+control thread that spawns as many worker threads as GPUs are present in the system. Each worker 
+thread is in charge of reading one tile of the input vectors, and compute and write one tile of the 
+output vector. This design allows us to re\hyp{}use the single\hyp{}threaded version of vector 
+addition; each worker thread executes that code, with the exception that the file pointer is 
+advanced to the offset corresponding to the tile the thread is computing for each file.  
+Listing~\ref{lst:hpe:control} shows the code for the control thread, which uses 
+\texttt{ecl\-Get\-Number\-Of\-Accelerators()} to get the number of GPUs present in the system.
+
+Often time, data exchange between domains is necessary. In such as case, common synchronization 
+primitives (\eg semaphores) become necessary to ensure that the data is not being modified by any 
+thread. Data exchange in GMAC\slash HPE is implemented through calls to \texttt{eclMemcpy()} which 
+takes the common destination, source, and size parameters.
+
+% vim: set spell ft=tex fo=aw2t expandtab sw=2 tw=100:

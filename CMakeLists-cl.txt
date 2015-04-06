@@ -1,0 +1,36 @@
+if(MAKE_CL)
+set(GMAC_CL "gmac-cl" CACHE STRING "Library name for GMAC OpenCL backend")
+set(GMAC_CL_HELPERS "cl-helpers" CACHE STRING "Library name for the OpenCL Helpers library")
+
+add_gmac_library(gmac-core-lite STATIC ${gmac-core-lite_SRC})
+target_link_libraries(gmac-core-lite gmac-core gmac-memory gmac-common gmac-trace)
+
+if(MAKE_STATIC)
+    add_gmac_library(${GMAC_CL} STATIC ${gmac-lite_SRC} ${gmac-include_SRC})
+    add_gmac_library(${GMAC_CL_HELPERS} STATIC ${gmac-lite-libs_SRC} ${gmac-include_SRC})
+else(MAKE_STATIC)
+    add_gmac_library(${GMAC_CL} SHARED ${gmac-lite_SRC} ${gmac-include_SRC})
+    add_gmac_library(${GMAC_CL_HELPERS} SHARED ${gmac-lite-libs_SRC} ${gmac-include_SRC})
+endif(MAKE_STATIC)
+
+target_link_libraries(${GMAC_CL} gmac-common gmac-trace gmac-core gmac-core-lite gmac-memory gmac-core-lite gmac-libs ${gmac_LIBS})
+set_target_properties(${GMAC_CL} PROPERTIES
+    VERSION ${GMAC_VERSION} SOVERSION 1
+)
+
+target_link_libraries(${GMAC_CL_HELPERS} ${gmac_LIBS})
+set_target_properties(${GMAC_CL_HELPERS} PROPERTIES
+    VERSION ${GMAC_VERSION} SOVERSION 1
+)
+
+set(GMAC_HEADERS ${GMAC_HEADERS} 
+                 ${CMAKE_SOURCE_DIR}/src/include/gmac/cl
+                 ${CMAKE_SOURCE_DIR}/src/include/gmac/cl.h
+                 ${CMAKE_SOURCE_DIR}/src/include/gmac/cl_types.h)
+
+set(GMAC_TARGET_NAME ${GMAC_TARGET_NAME} ${GMAC_CL} ${GMAC_CL_HELPERS})
+
+
+set(gmac-core-lite_LIB gmac-core-lite)
+
+endif(MAKE_CL)

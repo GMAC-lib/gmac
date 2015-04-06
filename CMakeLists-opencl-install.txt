@@ -1,0 +1,27 @@
+if(USE_OPENCL)
+    if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+        install(FILES ${CMAKE_SOURCE_DIR}/doc/latex/user_manual.pdf
+	            DESTINATION doc COMPONENT documentation)
+
+        if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+        	set(GMAC_SAMPLE_VS VS_x86_64)
+        else(CMAKE_SIZEOF_VOID_P EQUAL 8)
+        	set(GMAC_SAMPLE_VS VS_x86)
+        endif(CMAKE_SIZEOF_VOID_P EQUAL 8)
+
+       	set(GMAC_SAMPLES ${CMAKE_SOURCE_DIR}/samples/${GMAC_SAMPLE_VS}
+                ${CMAKE_SOURCE_DIR}/samples/cl
+                ${CMAKE_SOURCE_DIR}/samples/common
+                ${CMAKE_SOURCE_DIR}/samples/ecl)
+        foreach(__target ${GMAC_TARGET_NAME})
+                set(GMAC_DLLS ${GMAC_DLLS} 
+                        ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${__target}${CMAKE_SHARED_LIBRARY_SUFFIX})
+        endforeach()
+
+		install(DIRECTORY ${GMAC_SAMPLES}
+                DESTINATION samples COMPONENT samples PATTERN ".hg" EXCLUDE)
+        install(FILES ${GMAC_DLLS}
+                DESTINATION samples/${GMAC_SAMPLE_VS}
+                COMPONENT samples)
+    endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+endif(USE_OPENCL)

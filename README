@@ -1,0 +1,60 @@
+GMAC 11.12 Release Notes (12/22/2011)
+
+Bug Fixes
+---------
+ - Fixed bugs in the following sample files: clBitonicSort, eclBitonicSort, eclBlackScholes, eclBitonicSort_cplusplus
+
+Known Issues
+------------
+ - Only one GMAC version (32-bit or 64-bit) can be installed
+ - On Windows, if the samples are compiled, the user needs to remove by hand the GMAC directory before reinstalling
+ - On Windows, for NVIDIA OpenCL, the user has to modify by hand the path to the OpenCL.lib file in the sample projects
+
+
+GMAC 11.11 Release Notes (11/15/2011)
+
+New Features
+------------
+ - Added new sample files
+
+Bug Fixes
+---------
+ - Fixed bad calling convention on Windows when running 32-bit GMAC on 64-bit Windows
+ - Fixed leak that prevented OpenCL contexts and command queues to be released
+ - Added workaround to avoid errors when using the C++ Warpper header file from Khronos
+
+Known Issues
+------------
+ - Only one GMAC version (32-bit or 64-bit) can be installed
+ - On Windows, if the samples are compiled, the user needs to remove by hand the GMAC directory before reinstalling
+
+
+GMAC 11.10 Release Notes (10/31/2011)
+
+New Features
+------------
+ - Support for pointer arithmetic on OpenCL kernel arguments
+ - Support for Mac OS X Lion
+ - Added eclCompileBinary() and "eclCompileBinaryFile()" to compile OpenCL binary kernels
+ - Added eclGetAcceleratorInfo() to get information about the device being used
+ - Added eclGetFreeMemory() to get the amount of free memory on the device
+ - Added C++11 interface for OpenCL kernel calls
+
+
+Bug Fixes
+---------
+ - Modified eclFree() and clFree() to accept NULL pointers
+ - Modified eclCompileSourceFile() to return error code when the source file is not found
+ - CL/Helpers moved to external library to avoid incorrect destruction order
+ - Fixed table symbol patching on Windows which caused GMAC/CL on Windows to dead-lock
+ - Fixed native thread identification on Windows which caused occasional application crashes at exit time
+ - Fixed bad TLS allocation which produced occasional errors on multi-threaded applications
+ - Fixed usage of assert() on sample files which prevented samples running when compiled on Release mode
+ - Fixed memory leak which prevented shared allocations used by several threads to be correctly released
+
+Known Issues
+------------
+ - Only one GMAC version (32-bit or 64-bit) can be installed
+ - On Windows, GMAC/CL 32-bit causes a deadlock in the AMD OpenCL driver when running on 64-bit machines
+ - On Windows, if the samples are compiled, the user needs to remove by hand the GMAC directory before reinstalling
+ 

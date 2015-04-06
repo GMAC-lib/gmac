@@ -1,0 +1,16 @@
+add_gmac_library(gmac-trace STATIC ${gmac-trace_SRC})
+target_link_libraries(gmac-trace)
+
+add_gmac_library(gmac-common STATIC ${gmac-common_SRC})
+target_link_libraries(gmac-common gmac-trace)
+
+add_gmac_library(gmac-memory STATIC ${gmac-memory_SRC})
+target_link_libraries(gmac-memory gmac-common gmac-trace)
+
+add_gmac_library(gmac-core STATIC ${gmac-core_SRC})
+
+add_gmac_library(gmac-core-hpe STATIC ${gmac-core-hpe_SRC})
+target_link_libraries(gmac-core-hpe gmac-core gmac-common gmac-trace)
+
+add_gmac_library(gmac-libs STATIC ${gmac-libs_SRC})
+target_link_libraries(gmac-libs gmac-common gmac-trace)
